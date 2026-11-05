@@ -1,0 +1,70 @@
+project:
+  type: website
+  output-dir: docs
+  render:
+    - "*.qmd"
+    - "posts/**/*.qmd"
+    - "!templates/"
+  resources:
+    - assets/
+    - .nojekyll
+
+lang: ko
+date-format: "YYYY.MM.DD"
+author: Doyunamic
+
+website:
+  title: Doyunamic
+  description: "LLM, RAG, Agent 논문을 읽고 방법과 근거를 기록하는 Doyunamic의 AI Engineering Notes."
+  site-url: https://doyunamic-kwon.github.io
+  favicon: assets/favicon.svg
+  open-graph: true
+  twitter-card: true
+  page-navigation: false
+  navbar:
+    title: "Doyunamic<span class='brand-period'>.</span>"
+    background: light
+    pinned: true
+    collapse-below: md
+    right:
+      - href: index.qmd
+        text: Home
+      - href: reviews.qmd
+        text: Reviews
+      - href: about.qmd
+        text: About
+      - icon: github
+        href: https://github.com/Doyunamic-Kwon
+        aria-label: "Doyunamic의 GitHub"
+  search:
+    location: navbar
+    type: overlay
+  page-footer:
+    border: false
+    left: "Doyunamic<span class='footer-dot'> · </span>AI Engineering Notes"
+    right:
+      - text: "GitHub"
+        href: https://github.com/Doyunamic-Kwon
+      - text: "RSS"
+        href: reviews.xml
+
+format:
+  html:
+    theme:
+      - cosmo
+      - styles/theme.scss
+    css: styles/site.css
+    toc: true
+    toc-title: "이 글에서"
+    toc-depth: 2
+    anchor-sections: true
+    smooth-scroll: true
+    code-copy: true
+    code-overflow: scroll
+    highlight-style: github
+    html-math-method: mathjax
+    include-after-body: includes/site.html
+
+execute:
+  enabled: false
+

@@ -1,0 +1,13 @@
+/_site/
+/.quarto/
+/.DS_Store
+/.Rhistory
+/.RData
+/.venv/
+/node_modules/
+/.tools/
+__pycache__/
+*.pyc
+
+
+**/*.quarto_ipynb

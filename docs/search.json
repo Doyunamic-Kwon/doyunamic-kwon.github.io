@@ -1,0 +1,114 @@
+[
+  {
+    "objectID": "reviews.html",
+    "href": "reviews.html",
+    "title": "논문 리뷰",
+    "section": "",
+    "text": "THE NOTEBOOK\n  논문 리뷰.\n  문제를 이해하고, 방법을 따라가며, 결과의 의미를 살펴봅니다.\n  LLMRAGAgent\n\n\n\n\n    \n      \n      \n    \n\n\n\n\n일치 없음\n\n\n  ✳\n  첫 페이지를 준비하고 있습니다.완성한 논문 리뷰가 이곳에 모입니다.리뷰에서 다루는 항목은 작성 가이드에서 먼저 살펴볼 수 있습니다.리뷰 작성 가이드 →"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "AI Engineering Notes",
+    "section": "",
+    "text": "AI ENGINEERING NOTES\n    논문을 읽고,이해를 쌓습니다.\n    LLM, RAG, Agent 논문을 읽으며 방법과 근거, 구현할 때의 질문을 기록합니다.\n    \n      논문 리뷰 보기 ↗\n      블로그 소개 →\n    \n  \n  \n    ON MY READING DESK↗\n    From papersto understanding.\n    \n    01Large Language ModelsLLM\n    02Retrieval-Augmented GenerationRAG\n    03Language AgentsAgent\n    한 편의 논문에서, 다음 질문으로.\n  \n\n\n\n  \n    THE NOTEBOOK최근 논문 리뷰\n    전체 리뷰 →\n  \n\n\n\n\n일치 없음\n\n  \n    ✳\n    첫 리뷰를 준비하고 있습니다.논문에서 배운 내용과 남은 질문을 이곳에 차곡차곡 기록합니다.\n    A NEW NOTEBOOK\n  \n\n\n\n  Aa\n  HOW I READ이 블로그의 리뷰는 이렇게 정리합니다.문제와 방법, 결과를 뒷받침하는 근거까지.\n  ↗"
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "BEHIND THE NOTES\n  D.\n  \n  AI 논문을 읽고, 이해한 내용을 제 언어로 기록합니다."
+  },
+  {
+    "objectID": "about.html#이-블로그에-담는-내용",
+    "href": "about.html#이-블로그에-담는-내용",
+    "title": "About",
+    "section": "이 블로그에 담는 내용",
+    "text": "이 블로그에 담는 내용\nLLM, RAG, Agent를 중심으로 AI 엔지니어링과 연결되는 논문을 읽습니다. 논문이 해결하려는 문제와 핵심 방법을 설명하고, 주요 결과가 어떤 조건에서 관찰됐는지 살펴봅니다."
+  },
+  {
+    "objectID": "about.html#글을-정리하는-기준",
+    "href": "about.html#글을-정리하는-기준",
+    "title": "About",
+    "section": "글을 정리하는 기준",
+    "text": "글을 정리하는 기준\n논문에서 보고한 내용과 제 해석을 구분합니다. 이해가 충분하지 않은 부분은 질문으로 남기고, 내용을 다시 확인하면 글을 수정합니다."
+  },
+  {
+    "objectID": "about.html#관심-분야",
+    "href": "about.html#관심-분야",
+    "title": "About",
+    "section": "관심 분야",
+    "text": "관심 분야\n\n\nLLM — 모델의 학습 방법과 능력, 평가 방법을 살펴봅니다.\nRAG — 외부 정보를 검색하고 답변에 사용하는 과정을 살펴봅니다.\nAgent — 모델이 도구를 사용하고 여러 단계의 작업을 수행하는 방법을 살펴봅니다."
+  },
+  {
+    "objectID": "about.html#다른-기록",
+    "href": "about.html#다른-기록",
+    "title": "About",
+    "section": "다른 기록",
+    "text": "다른 기록\n구현한 내용과 공개할 수 있는 코드는 GitHub에 연결합니다.\nGitHub에서 보기 ↗"
+  },
+  {
+    "objectID": "review-guide.html",
+    "href": "review-guide.html",
+    "title": "논문 리뷰를 정리하는 방법",
+    "section": "",
+    "text": "노트이 글의 역할\n\n\n\n이 글은 앞으로 사용할 논문 리뷰의 작성 가이드입니다. 특정 논문의 결과나 직접 수행한 실험을 보고하는 글이 아닙니다."
+  },
+  {
+    "objectID": "review-guide.html#먼저-이-논문이-하는-일을-설명하기",
+    "href": "review-guide.html#먼저-이-논문이-하는-일을-설명하기",
+    "title": "논문 리뷰를 정리하는 방법",
+    "section": "먼저, 이 논문이 하는 일을 설명하기",
+    "text": "먼저, 이 논문이 하는 일을 설명하기\n글의 첫 부분에는 논문이 해결하려는 문제와 핵심 방법을 짧게 적습니다. 독자가 본문을 읽기 전에 이 논문을 읽을 이유를 알 수 있도록 설명합니다.\n논문 제목, 저자, 발표 정보, 확인한 버전, 논문과 공개 코드의 링크를 함께 남깁니다. Preprint를 읽었다면 발표 여부를 확인한 범위에서 표기합니다."
+  },
+  {
+    "objectID": "review-guide.html#해결하려는-문제-살펴보기",
+    "href": "review-guide.html#해결하려는-문제-살펴보기",
+    "title": "논문 리뷰를 정리하는 방법",
+    "section": "해결하려는 문제 살펴보기",
+    "text": "해결하려는 문제 살펴보기\n기존 방법이 어떤 조건에서 어려움을 겪는지 설명합니다. 논문에서 제시한 문제와 작성자가 관심을 가진 문제를 구분합니다."
+  },
+  {
+    "objectID": "review-guide.html#핵심-방법-따라가기",
+    "href": "review-guide.html#핵심-방법-따라가기",
+    "title": "논문 리뷰를 정리하는 방법",
+    "section": "핵심 방법 따라가기",
+    "text": "핵심 방법 따라가기\n입력이 들어온 뒤 어떤 처리를 거쳐 출력이 만들어지는지 설명합니다. 필요한 경우 짧은 예시나 직접 그린 그림을 사용하고, 그림을 바탕으로 한 논문의 Figure를 표시합니다.\n수식은 방법을 이해하는 데 필요한 것만 포함합니다. 기호는 수식이 처음 등장하는 곳에서 설명합니다.\n\n\n\n\n\n\n힌트수식 표시 예시\n\n\n\n다음 식은 수식의 표시 상태를 확인하기 위한 예시입니다. 이 식으로 특정 논문의 결과를 주장하지 않습니다.\n\\[\n\\operatorname{sim}(q, d) = \\frac{q^\\top d}{\\lVert q\\rVert\\,\\lVert d\\rVert}\n\\]\n여기서 \\(q\\)와 \\(d\\)는 각각 Query와 Document를 나타내는 0이 아닌 Vector입니다. 식은 두 Vector의 방향이 얼마나 비슷한지 계산하는 Cosine Similarity입니다."
+  },
+  {
+    "objectID": "review-guide.html#결과를-비교-조건과-함께-읽기",
+    "href": "review-guide.html#결과를-비교-조건과-함께-읽기",
+    "title": "논문 리뷰를 정리하는 방법",
+    "section": "결과를 비교 조건과 함께 읽기",
+    "text": "결과를 비교 조건과 함께 읽기\n주요 결과를 소개할 때에는 Dataset, Baseline, Metric, 비교 조건을 함께 적습니다. 수치가 나온 Table이나 Figure를 표시하고, 해당 결과가 뒷받침하는 범위에서 해석합니다.\n\n\n\n확인할 항목\n기록할 내용\n\n\n\n\n평가 대상\n어떤 Task와 Dataset을 사용했는가\n\n\n비교 방법\n어떤 Baseline과 비교했는가\n\n\n평가 기준\n어떤 Metric을 사용했고 값의 방향은 무엇을 뜻하는가\n\n\n비교 조건\n모델, 데이터, 계산 비용 등의 조건이 어떻게 다른가\n\n\n결과의 위치\n논문의 어느 Table 또는 Figure에 제시됐는가"
+  },
+  {
+    "objectID": "review-guide.html#한계와-해석-구분하기",
+    "href": "review-guide.html#한계와-해석-구분하기",
+    "title": "논문 리뷰를 정리하는 방법",
+    "section": "한계와 해석 구분하기",
+    "text": "한계와 해석 구분하기\n저자가 밝힌 한계와 제 해석을 각각 적습니다. 논문에서 확인하지 않은 설정으로 결론을 넓히지 않고, 추가 확인이 필요한 부분은 질문으로 남깁니다."
+  },
+  {
+    "objectID": "review-guide.html#구현-관점의-메모-남기기",
+    "href": "review-guide.html#구현-관점의-메모-남기기",
+    "title": "논문 리뷰를 정리하는 방법",
+    "section": "구현 관점의 메모 남기기",
+    "text": "구현 관점의 메모 남기기\n공개 코드를 읽었다면 확인한 파일이나 함수의 링크를 남깁니다. 직접 작성하거나 실행한 내용이 있다면 수행한 범위와 결과를 구체적으로 적습니다.\n다음 코드는 코드 블록의 표시 상태를 확인하기 위한 예시입니다. 사이트를 만들거나 글을 게시할 때 자동으로 실행되지 않습니다.\ndef format_paper_title(title: str, year: int) -&gt; str:\n    return f\"{title} ({year})\""
+  },
+  {
+    "objectID": "review-guide.html#출처와-수정-기록-남기기",
+    "href": "review-guide.html#출처와-수정-기록-남기기",
+    "title": "논문 리뷰를 정리하는 방법",
+    "section": "출처와 수정 기록 남기기",
+    "text": "출처와 수정 기록 남기기\n논문과 코드의 원래 링크를 유지하고, 내용이 바뀌면 수정일을 갱신합니다. Quarto의 참고문헌 기능으로 본문 인용과 참고문헌 목록을 연결할 수 있습니다.\n인용 형식 예시로 RAG 논문 (Lewis 기타 2020년)을 표시했습니다. 이 인용은 참고문헌 표시를 확인하기 위한 것이며, 위 가이드의 예시 수식이나 코드를 이 논문에서 가져왔다는 뜻은 아닙니다."
+  },
+  {
+    "objectID": "review-guide.html#참고문헌",
+    "href": "review-guide.html#참고문헌",
+    "title": "논문 리뷰를 정리하는 방법",
+    "section": "참고문헌",
+    "text": "참고문헌\n\n\nLewis, Patrick, Ethan Perez, Aleksandra Piktus, 기타. 2020년. “Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks”. Advances in Neural Information Processing Systems 33: 9459–74. https://proceedings.neurips.cc/paper/2020/hash/6b493230205f780e1bc26945df7481e5-Abstract.html."
+  }
+]

@@ -1,0 +1,8 @@
+toc: true
+toc-depth: 2
+title-block-banner: false
+body-classes: article-page
+comments: false
+execute:
+  enabled: false
+

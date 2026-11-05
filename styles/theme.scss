@@ -1,0 +1,22 @@
+/*-- scss:defaults --*/
+$body-bg: #fafaf7;
+$body-color: #202b28;
+$link-color: #315e4c;
+$primary: #315e4c;
+$font-family-sans-serif: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+$font-family-monospace: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+$font-size-base: 1rem;
+$headings-font-weight: 700;
+$navbar-bg: #fafaf7;
+$navbar-fg: #202b28;
+$navbar-hl: #315e4c;
+$border-color: #dce0d9;
+$code-block-bg: #f1f3ed;
+$code-bg: #edf0e8;
+$code-color: #315e4c;
+$toc-color: #315e4c;
+$input-bg: #fff;
+
+/*-- scss:rules --*/
+::selection { background: #d9e7ce; color: #202b28; }
+
