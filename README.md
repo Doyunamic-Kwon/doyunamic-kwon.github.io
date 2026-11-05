@@ -1,4 +1,4 @@
-# Doyunamic · AI Engineering Notes
+# Doyunamic
 
 LLM, RAG, Agent 논문을 한국어로 리뷰하는 개인 블로그입니다. Zotero에서 논문을 관리하고 Obsidian에서 리뷰를 작성한 뒤 Quarto와 GitHub Pages로 게시합니다.
 
@@ -93,7 +93,6 @@ GitHub Pages는 **Deploy from a branch → main → /docs** 설정입니다. 게
 | 파일 | 역할 |
 |---|---|
 | `index.qmd`, `reviews.qmd`, `about.qmd` | 홈·리뷰 목록·소개 |
-| `review-guide.qmd` | 공개된 리뷰 작성 가이드 |
 | `templates/obsidian-review.md` | Obsidian용 리뷰 템플릿 |
 | `templates/paper-review/index.qmd` | 기존 Quarto용 상세 리뷰 템플릿 |
 | `scripts/zotero_client.py` | Zotero의 선택 항목을 읽는 연결 기능 |

@@ -18,40 +18,47 @@ project:
 
 lang: ko
 date-format: "YYYY.MM.DD"
-author: Doyunamic
 
 website:
   title: Doyunamic
-  description: "LLM, RAG, Agent 논문을 읽고 방법과 근거를 기록하는 Doyunamic의 AI Engineering Notes."
+  description: "Doyunamic의 논문 리뷰."
   site-url: https://doyunamic-kwon.github.io
   favicon: assets/favicon.svg
   open-graph: true
   twitter-card: true
   page-navigation: false
   navbar:
-    title: "Doyunamic<span class='brand-period'>.</span>"
+    title: "Doyunamic"
     background: light
     pinned: true
     collapse-below: md
-    right:
-      - href: index.qmd
-        text: Home
-      - href: reviews.qmd
-        text: Reviews
-      - href: about.qmd
-        text: About
-      - icon: github
-        href: https://github.com/Doyunamic-Kwon
-        aria-label: "Doyunamic의 GitHub"
+  sidebar:
+    style: floating
+    search: false
+    collapse-level: 3
+    header: |
+      <div class="sidebar-profile">
+        <a class="author-name" href="/">Doyunamic</a>
+        <a class="author-link" href="https://github.com/Doyunamic-Kwon">GitHub</a>
+      </div>
+    contents:
+      - text: 전체 글
+        href: reviews.qmd
+      - section: 논문 리뷰
+        contents:
+          - text: LLM
+            href: reviews.qmd#category=LLM
+          - text: RAG
+            href: reviews.qmd#category=RAG
+          - text: Agent
+            href: reviews.qmd#category=Agent
   search:
     location: navbar
     type: overlay
   page-footer:
     border: false
-    left: "Doyunamic<span class='footer-dot'> · </span>AI Engineering Notes"
+    left: "© 2026 Doyunamic"
     right:
-      - text: "GitHub"
-        href: https://github.com/Doyunamic-Kwon
       - text: "RSS"
         href: reviews.xml
 
@@ -61,6 +68,11 @@ format:
       - cosmo
       - styles/theme.scss
     css: styles/site.css
+    grid:
+      sidebar-width: 210px
+      body-width: 850px
+      margin-width: 160px
+      gutter-width: 2rem
     toc: true
     toc-title: "이 글에서"
     toc-depth: 2

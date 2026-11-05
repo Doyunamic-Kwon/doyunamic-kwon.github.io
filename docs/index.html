@@ -6,10 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Doyunamic">
-<meta name="description" content="LLM, RAG, Agent 논문을 읽으며 이해를 쌓는 Doyunamic의 기록.">
 
-<title>AI Engineering Notes – Doyunamic</title>
+<title>Doyunamic</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -50,7 +48,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-ea414032785aa0bf2973cab45df11200.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-7354ecc8dcfcbbd2e038811af94012b7.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-c5cefc1d11ee76eaab61bf5ba9360c63.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -87,9 +85,9 @@ ul.task-list li input[type="checkbox"] {
     }
 
     const options = {
-      valueNames: ['listing-date','listing-title','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
+      valueNames: ['listing-title','listing-date','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
       
-      searchColumns: [],
+      searchColumns: ["listing-categories"],
     };
 
     window['quarto-listings'] = window['quarto-listings'] || {};
@@ -133,15 +131,15 @@ window.Quarto = {
 </script>
 
 <link rel="stylesheet" href="styles/site.css">
-<meta property="og:title" content="AI Engineering Notes">
-<meta property="og:description" content="LLM, RAG, Agent 논문을 읽으며 이해를 쌓는 Doyunamic의 기록.">
+<meta property="og:title" content="Doyunamic">
+<meta property="og:description" content="Doyunamic의 논문 리뷰.">
 <meta property="og:site_name" content="Doyunamic">
-<meta name="twitter:title" content="AI Engineering Notes">
-<meta name="twitter:description" content="LLM, RAG, Agent 논문을 읽으며 이해를 쌓는 Doyunamic의 기록.">
+<meta name="twitter:title" content="Doyunamic">
+<meta name="twitter:description" content="Doyunamic의 논문 리뷰.">
 <meta name="twitter:card" content="summary">
 </head>
 
-<body class="nav-fixed home-page quarto-light"><a id="quarto-skip-link" class="visually-hidden-focusable" href="#quarto-document-content">Skip to main content</a>
+<body class="nav-sidebar floating nav-fixed listing-page quarto-light"><a id="quarto-skip-link" class="visually-hidden-focusable" href="#quarto-document-content">Skip to main content</a>
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -149,67 +147,86 @@ window.Quarto = {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">Doyunamic<span class="brand-period">.</span></span>
+    <span class="navbar-title">Doyunamic</span>
     </a>
   </div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="탐색 전환" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
-  <span class="navbar-toggler-icon"></span>
-</button>
-          <div class="collapse navbar-collapse" id="navbarCollapse">
-            <ul class="navbar-nav navbar-nav-scroll ms-auto">
-  <li class="nav-item">
-    <a class="nav-link active" href="./index.html" aria-current="page"> 
-<span class="menu-text">Home</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./reviews.html"> 
-<span class="menu-text">Reviews</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./about.html"> 
-<span class="menu-text">About</span></a>
-  </li>  
-  <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/Doyunamic-Kwon"> <i class="bi bi-github" role="img" aria-label="Doyunamic의 GitHub">
-</i> 
-<span class="menu-text"></span></a>
-  </li>  
-</ul>
-          </div> <!-- /navcollapse -->
-            <div class="quarto-navbar-tools">
+        <div class="quarto-navbar-tools tools-end">
 </div>
-            <div id="quarto-search" class="" title="검색"></div>
+          <div id="quarto-search" class="" title="검색"></div>
       </div> <!-- /container-fluid -->
     </nav>
+  <nav class="quarto-secondary-nav" aria-label="도구 모음">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="사이드바 전환" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="사이트 이동 경로"><ol class="breadcrumb"><li class="breadcrumb-item">최근 글</li></ol></nav>
+        <a class="flex-grow-1" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
 </header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto" aria-label="구역"><div class="quarto-sidebar-header"><div class="sidebar-header-item">
+<div class="sidebar-profile">
+<p><a class="author-name" href="./">Doyunamic</a> <a class="author-link" href="https://github.com/Doyunamic-Kwon">GitHub</a></p>
+</div>
+</div></div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./reviews.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">전체 글</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <button type="button" class="sidebar-item-text sidebar-item-toggle sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-controls="quarto-sidebar-section-1" aria-expanded="true">
+ <span class="menu-text" id="quarto-sidebar-section-1-label">논문 리뷰</span><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+      </div>
+      <ul id="quarto-sidebar-section-1" aria-labelledby="quarto-sidebar-section-1-label" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./reviews.html#category=LLM" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">LLM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./reviews.html#category=RAG" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">RAG</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./reviews.html#category=Agent" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Agent</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+    <h5 class="quarto-listing-category-title">분류</h5><div class="quarto-listing-category category-unnumbered"></div></div>
 <!-- main -->
-<main class="content page-columns page-full column-page" id="quarto-document-content" tabindex="-1">
+<main class="content" id="quarto-document-content" tabindex="-1">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">AI Engineering Notes</h1>
-</div>
-
-<div>
-  <div class="description">
-    LLM, RAG, Agent 논문을 읽으며 이해를 쌓는 Doyunamic의 기록.
-  </div>
+<h1 class="title">최근 글</h1>
 </div>
 
 
-<div class="quarto-title-meta column-page">
 
-    <div>
-    <div class="quarto-title-meta-heading">저자</div>
-    <div class="quarto-title-meta-contents">
-             <p>Doyunamic </p>
-          </div>
-  </div>
+<div class="quarto-title-meta">
+
     
   
     
@@ -220,50 +237,13 @@ window.Quarto = {
 </header>
 
 
-<section class="home-hero page-columns page-full" aria-labelledby="hero-title">
-  <div class="hero-copy">
-    <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> AI ENGINEERING NOTES</p>
-    <h1 id="hero-title">논문을 읽고,<br>이해를 <span class="text-accent">쌓습니다.</span></h1>
-    <p class="hero-description">LLM, RAG, Agent 논문을 읽으며<br class="desktop-break"> 방법과 근거, 구현할 때의 질문을 기록합니다.</p>
-    <div class="hero-actions">
-      <a class="button-primary" href="reviews.html">논문 리뷰 보기 <span aria-hidden="true">↗</span></a>
-      <a class="text-link" href="about.html">블로그 소개 <span aria-hidden="true">→</span></a>
-    </div>
-  </div>
-  <aside class="reading-desk" aria-label="관심 분야">
-    <div class="desk-heading"><span>ON MY READING DESK</span><span class="desk-mark" aria-hidden="true">↗</span></div>
-    <div class="desk-title">From papers<br>to understanding<span>.</span></div>
-    <div class="desk-rule"></div>
-    <div class="desk-topic"><span class="topic-number">01</span><span>Large Language Models</span><span class="topic-abbr">LLM</span></div>
-    <div class="desk-topic"><span class="topic-number">02</span><span>Retrieval-Augmented Generation</span><span class="topic-abbr">RAG</span></div>
-    <div class="desk-topic"><span class="topic-number">03</span><span>Language Agents</span><span class="topic-abbr">Agent</span></div>
-    <p class="desk-caption">한 편의 논문에서, 다음 질문으로.</p>
-  </aside>
-</section>
-
-<section class="review-section" aria-labelledby="recent-title">
-  <div class="section-heading">
-    <div><p class="eyebrow">THE NOTEBOOK</p><h2 id="recent-title" class="anchored">최근 논문 리뷰</h2></div>
-    <a class="text-link" href="reviews.html">전체 리뷰 <span aria-hidden="true">→</span></a>
-  </div>
 <div id="listing-recent-reviews" class="quarto-listing quarto-listing-container-default">
 <div class="list quarto-listing-default">
 
 </div>
 <div class="listing-no-matching d-none">일치 없음</div>
 </div>
-  <div class="empty-state" data-empty-for="recent-reviews">
-    <div class="empty-symbol" aria-hidden="true">✳</div>
-    <div><p class="empty-title">첫 리뷰를 준비하고 있습니다.</p><p class="empty-description">논문에서 배운 내용과 남은 질문을 이곳에 차곡차곡 기록합니다.</p></div>
-    <span class="empty-label">A NEW NOTEBOOK</span>
-  </div>
-</section>
-
-<a class="guide-banner" href="review-guide.html">
-  <div class="guide-badge" aria-hidden="true">Aa</div>
-  <div class="guide-banner-copy"><p class="eyebrow">HOW I READ</p><p class="guide-banner-title">이 블로그의 리뷰는 이렇게 정리합니다.</p><p>문제와 방법, 결과를 뒷받침하는 근거까지.</p></div>
-  <span class="guide-arrow" aria-hidden="true">↗</span>
-</a>
+<p class="empty-state" data-empty-for="recent-reviews">아직 게시된 글이 없습니다.</p>
 
 
 
@@ -751,18 +731,13 @@ window.Quarto = {
 <footer class="footer">
   <div class="nav-footer">
     <div class="nav-footer-left">
-<p>Doyunamic<span class="footer-dot"> · </span>AI Engineering Notes</p>
+<p>© 2026 Doyunamic</p>
 </div>   
     <div class="nav-footer-center">
       &nbsp;
     </div>
     <div class="nav-footer-right">
       <ul class="footer-items list-unstyled">
-    <li class="nav-item">
-    <a class="nav-link" href="https://github.com/Doyunamic-Kwon">
-<p>GitHub</p>
-</a>
-  </li>  
     <li class="nav-item">
     <a class="nav-link" href="./reviews.xml">
 <p>RSS</p>

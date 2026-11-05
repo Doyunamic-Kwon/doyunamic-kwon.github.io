@@ -5,11 +5,11 @@
       xmlns:dc="http://purl.org/dc/elements/1.1/" 
       version="2.0">
 <channel>
-<title>Doyunamic — 논문 리뷰</title>
+<title>Doyunamic</title>
 <link>https://doyunamic-kwon.github.io/reviews.html</link>
 <atom:link href="https://doyunamic-kwon.github.io/reviews.xml" rel="self" type="application/rss+xml"/>
-<description>LLM, RAG, Agent 논문의 문제, 방법, 결과를 살펴봅니다.</description>
+<description>Doyunamic의 논문 리뷰.</description>
 <generator>quarto-1.11.9</generator>
-<lastBuildDate>Thu, 05 Nov 2026 09:21:06 GMT</lastBuildDate>
+<lastBuildDate>Thu, 05 Nov 2026 09:35:47 GMT</lastBuildDate>
 </channel>
 </rss>

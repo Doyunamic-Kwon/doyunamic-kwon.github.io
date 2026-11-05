@@ -1,39 +1,8 @@
 ---
-title: "About"
-pagetitle: "About"
-description: "AI Engineering Notes와 작성자 Doyunamic을 소개합니다."
+title: "Doyunamic"
 toc: false
-body-classes: about-page
 ---
 
-```{=html}
-<header class="page-intro about-intro">
-  <p class="eyebrow">BEHIND THE NOTES</p>
-  <div class="author-monogram" aria-hidden="true">D<span>.</span></div>
-  <h1>안녕하세요,<br>Doyunamic입니다<span class="text-accent">.</span></h1>
-  <p>AI 논문을 읽고, 이해한 내용을 제 언어로 기록합니다.</p>
-</header>
-```
+LLM · RAG · Agent
 
-## 이 블로그에 담는 내용
-
-LLM, RAG, Agent를 중심으로 AI 엔지니어링과 연결되는 논문을 읽습니다. 논문이 해결하려는 문제와 핵심 방법을 설명하고, 주요 결과가 어떤 조건에서 관찰됐는지 살펴봅니다.
-
-## 글을 정리하는 기준
-
-논문에서 보고한 내용과 제 해석을 구분합니다. 이해가 충분하지 않은 부분은 질문으로 남기고, 내용을 다시 확인하면 글을 수정합니다.
-
-## 관심 분야
-
-::: {.interest-list}
-- **LLM** — 모델의 학습 방법과 능력, 평가 방법을 살펴봅니다.
-- **RAG** — 외부 정보를 검색하고 답변에 사용하는 과정을 살펴봅니다.
-- **Agent** — 모델이 도구를 사용하고 여러 단계의 작업을 수행하는 방법을 살펴봅니다.
-:::
-
-## 다른 기록
-
-구현한 내용과 공개할 수 있는 코드는 GitHub에 연결합니다.
-
-[GitHub에서 보기 ↗](https://github.com/Doyunamic-Kwon){.button-outline}
-
+[GitHub](https://github.com/Doyunamic-Kwon)

@@ -1,43 +1,27 @@
 ---
-title: "논문 리뷰"
-pagetitle: "Reviews"
-description: "LLM, RAG, Agent 논문의 문제, 방법, 결과를 살펴봅니다."
-page-layout: full
+title: "전체 글"
+pagetitle: "전체 글"
 toc: false
-body-classes: archive-page
+body-classes: listing-page
 listing:
   id: all-reviews
   contents: posts
   sort: "date desc"
   type: default
-  fields: [date, title, description, categories]
+  fields: [title, date, categories]
   categories: unnumbered
   date-format: "YYYY.MM.DD"
   sort-ui: false
-  filter-ui: true
+  filter-ui: false
   page-size: 10
   feed:
     type: partial
-    title: "Doyunamic — 논문 리뷰"
+    title: "Doyunamic"
 ---
-
-```{=html}
-<header class="page-intro">
-  <p class="eyebrow">THE NOTEBOOK</p>
-  <h1>논문 리뷰<span class="text-accent">.</span></h1>
-  <p>문제를 이해하고, 방법을 따라가며, 결과의 의미를 살펴봅니다.</p>
-  <div class="interest-tags" aria-label="다루는 주제"><span>LLM</span><span>RAG</span><span>Agent</span></div>
-</header>
-<div id="review-categories" class="review-category-controls" aria-label="리뷰 주제 선택"></div>
-```
 
 ::: {#all-reviews}
 :::
 
 ```{=html}
-<div class="empty-state archive-empty" data-empty-for="all-reviews">
-  <div class="empty-symbol" aria-hidden="true">✳</div>
-  <div><p class="empty-title">첫 페이지를 준비하고 있습니다.</p><p class="empty-description">완성한 논문 리뷰가 이곳에 모입니다.<br>리뷰에서 다루는 항목은 작성 가이드에서 먼저 살펴볼 수 있습니다.</p><a class="text-link" href="review-guide.html">리뷰 작성 가이드 <span aria-hidden="true">→</span></a></div>
-</div>
+<p class="empty-state" data-empty-for="all-reviews">아직 게시된 글이 없습니다.</p>
 ```
-
