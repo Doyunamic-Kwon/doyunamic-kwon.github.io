@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create a review, preview the website, or publish the rendered site."""
+"""Zotero → Obsidian → Quarto → GitHub Pages."""
 
 from __future__ import annotations
 
@@ -12,116 +12,400 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
+import uuid
 from zoneinfo import ZoneInfo
 
+from publishing import ObsidianPublisher, Pandoc, PublishError, safe_inside, write_json, yaml_header
+from zotero_client import ZoteroClient, ZoteroError, citation_key
+
 ROOT = Path(__file__).resolve().parents[1]
+CONFIG = ROOT / ".blog-local.json"
 
 
-def run(args: list[str]) -> None:
-    subprocess.run(args, cwd=ROOT, check=True)
+def today() -> str:
+    return dt.datetime.now(ZoneInfo("Asia/Seoul")).date().isoformat()
+
+
+def run(args: list[str], *, cwd: Path = ROOT) -> None:
+    subprocess.run(args, cwd=cwd, check=True)
 
 
 def output(args: list[str]) -> str:
     return subprocess.check_output(args, cwd=ROOT, text=True).strip()
 
 
+def config() -> dict:
+    if not CONFIG.is_file():
+        raise PublishError("먼저 연결 설정을 실행해 Obsidian Vault를 지정하세요.")
+    try:
+        data = json.loads(CONFIG.read_text())
+    except (OSError, json.JSONDecodeError):
+        raise PublishError("블로그의 로컬 연결 설정을 읽지 못했습니다.") from None
+    if not isinstance(data, dict) or not data.get("vault"):
+        raise PublishError("Obsidian Vault 경로를 연결 설정에서 확인하세요.")
+    return data
+
+
 def quarto() -> str:
-    candidates = [
-        os.environ.get("QUARTO_BIN"),
-        shutil.which("quarto"),
-        str(ROOT / ".tools/quarto/bin/quarto"),
-        str(ROOT.parent.parent / "work/bin/quarto"),
-    ]
+    local = json.loads(CONFIG.read_text()) if CONFIG.is_file() else {}
+    candidates = [os.environ.get("QUARTO_BIN"), shutil.which("quarto"), local.get("quarto_path"),
+                  str(ROOT / ".tools/quarto/bin/quarto")]
     for candidate in candidates:
         if candidate and Path(candidate).is_file() and os.access(candidate, os.X_OK):
             return candidate
-    raise SystemExit(
-        "Quarto를 찾지 못했습니다. https://quarto.org/docs/download/ 에서 설치한 뒤 다시 실행하세요."
-    )
+    raise PublishError("Quarto를 찾지 못했습니다. https://quarto.org/docs/download/ 에서 설치하세요.")
+
+
+def publisher() -> ObsidianPublisher:
+    return ObsidianPublisher(ROOT, config(), Pandoc(quarto()))
+
+
+def setup(args: argparse.Namespace) -> None:
+    if args.vault:
+        values = json.loads(CONFIG.read_text()) if CONFIG.is_file() else {}
+        values.update({"vault": str(Path(args.vault).expanduser().resolve()),
+                       "reviews": "Blog/Reviews", "literature": "Blog/Literature", "templates": "Blog/Templates"})
+        write_json(CONFIG, values)
+    values = config()
+    vault = Path(values["vault"]).expanduser().resolve()
+    if not vault.is_dir():
+        raise PublishError("Obsidian Vault 폴더를 먼저 확인하세요.")
+    home = safe_inside(vault / "Blog", vault)
+    for relative in ("Blog", values["reviews"], values["literature"], values["templates"], "Blog/Assets"):
+        safe_inside(vault / relative, vault).mkdir(parents=True, exist_ok=True)
+    identity = home / ".blog-vault-id"
+    if not identity.exists():
+        identity.write_text(uuid.uuid4().hex + "\n")
+    template = (ROOT / "templates/obsidian-review.md").read_text()
+    template_path = safe_inside(vault / values["templates"] / "논문 리뷰.md", vault)
+    if not template_path.exists():
+        template_path.write_text(template)
+    actions = {
+        "Zotero·Obsidian 연결 확인": "연결 확인.command",
+        "Zotero 논문 가져오기": "Zotero 가져오기.command",
+        "새 리뷰 만들기": "새 글 만들기.command",
+        "선택한 리뷰 미리보기": "미리보기.command",
+        "공개 선택한 리뷰 가져오기": "Obsidian 가져오기.command",
+        "블로그 게시하기": "게시하기.command",
+    }
+    links = "\n".join(f"- [{label}]({(ROOT / name).as_uri()})" for label, name in actions.items())
+    marker = "<!-- doyunamic-blog-guide -->"
+    guide = f"""---
+title: 블로그 작성 안내
+---
+
+{marker}
+
+# Doyunamic 블로그 작성
+
+이 폴더에서 논문을 읽고 리뷰를 작성합니다. 글을 공개하려면 리뷰의 `blog_publish`를 켠 뒤 게시하기를 실행하세요.
+
+## 시작하기
+
+{links}
+
+파일 링크를 열면 BLOG 폴더의 작업 창이 실행됩니다. macOS에서 확인 창이 뜨면 표시된 파일 이름과 경로를 확인하세요.
+
+## 폴더
+
+- **Literature**: Zotero에서 가져온 논문 정보·메모·PDF 주석입니다. 새로 가져오면 가져온 구간이 갱신됩니다. 각 파일의 ‘내 메모’ 아래는 유지합니다.
+- **Reviews**: 직접 쓰는 논문 리뷰입니다. Zotero 읽기 자료와 별개 파일이므로 직접 쓴 내용을 다시 가져오기로 덮어쓰지 않습니다.
+- **Assets**: 리뷰에서 사용할 그림을 보관할 수 있습니다.
+- **Templates**: 논문 리뷰의 기본 틀입니다.
+
+## 글을 쓰는 순서
+
+1. Zotero를 열고 ‘Zotero 논문 가져오기’에서 논문을 선택합니다.
+2. ‘새 리뷰 만들기’에서 해당 논문 또는 직접 작성할 제목을 선택합니다.
+3. Reviews의 Markdown 파일에서 질문 하나와 잠정적인 답을 먼저 적고, 근거를 확인하며 설명을 고칩니다.
+4. ‘선택한 리뷰 미리보기’로 수식·그림·참고문헌을 확인합니다. `blog_publish: false`인 초안도 개인 미리보기로 볼 수 있습니다.
+5. 공개할 때 `blog_publish: true`로 바꾸고 ‘블로그 게시하기’를 실행합니다.
+
+## 공개 범위
+
+블로그로 가져오는 파일은 Reviews 안에서 `blog_publish: true`로 선택한 리뷰와 해당 리뷰에 연결한 그림입니다. Literature, 이 안내문, Templates와 Obsidian 설정은 블로그 저장소로 복사하지 않습니다.
+
+`%% ... %%` 안의 개인 메모와 HTML 주석은 공개 복사본에서 제외됩니다. 개인 메모 링크는 주석 안에 두세요. 다른 리뷰로 연결할 때에는 연결 대상도 공개 대상으로 선택해야 합니다.
+
+공개를 철회하려면 해당 리뷰의 `blog_publish`를 false로 바꾸고 게시하기를 실행하세요. 현재 사이트에서는 빠지지만, 이미 공개 저장소에 올린 이전 버전은 Git history에 남을 수 있습니다.
+
+## 인용과 그림
+
+Zotero에서 가져온 노트에는 `[@zotero-항목키]` 형식의 인용이 있습니다. 리뷰 본문에 복사하면 게시 전에 해당 논문의 서지정보만 Zotero에서 가져옵니다. 논문 인용이 있는 글을 가져오거나 미리 볼 때에는 Zotero를 열어 두세요.
+
+그림은 `![[그림.png]]` 또는 `![그림 설명](../Assets/그림.png)`로 연결합니다. 사용한 그림만 공개 복사본에 들어갑니다. PDF 전체나 다른 노트를 본문에 포함하는 기능은 이 게시 흐름에서 사용하지 않습니다.
+
+블로그용으로 생성한 posts 폴더의 복사본은 직접 수정하지 말고 Reviews의 원본을 수정하세요.
+"""
+    guide_path = home / "블로그 작성 안내.md"
+    if not guide_path.exists() or marker in guide_path.read_text():
+        guide_path.write_text(guide)
+    print(f"Obsidian 연결 완료: {home}")
+    print("Obsidian에서 ‘블로그 작성 안내’를 열어 시작하세요.")
+
+
+def choose_item(key: str | None = None, *, allow_none: bool = False) -> str | None:
+    if key:
+        citation_key(key)
+        return key
+    items = ZoteroClient().list_items()
+    if allow_none:
+        print("0. 논문 선택 없이 직접 작성")
+    for index, item in enumerate(items, 1):
+        print(f"{index}. {item['title']}")
+    if not items and not allow_none:
+        raise PublishError("Zotero에 가져올 논문 항목이 없습니다.")
+    answer = input("논문 번호: ").strip()
+    if answer == "0" and allow_none:
+        return None
+    if not answer.isdigit() or not 1 <= int(answer) <= len(items):
+        raise PublishError("목록에서 논문 번호를 선택하세요.")
+    return items[int(answer) - 1]["key"]
+
+
+def import_zotero(key: str) -> Path:
+    values = config()
+    vault = Path(values["vault"]).resolve()
+    folder = safe_inside(vault / values["literature"], vault)
+    folder.mkdir(parents=True, exist_ok=True)
+    client = ZoteroClient()
+    item = client.get_item(key)
+    title = item.get("data", item).get("title", key)
+    safe_title = re.sub(r'[\x00-\x1f/\\:*?"<>|]', " ", title).strip()[:100] or key
+    existing = list(folder.glob(f"* - {key}.md"))
+    if len(existing) > 1:
+        raise PublishError("같은 Zotero 논문의 읽기 메모가 여러 개 있습니다.")
+    path = safe_inside(existing[0] if existing else folder / f"{safe_title} - {key}.md", vault)
+    generated = client.literature_markdown(key)
+    pieces = generated.split("---", 2)
+    if len(pieces) != 3:
+        raise PublishError("Zotero 읽기 메모 형식을 확인하지 못했습니다.")
+    start, end = "<!-- zotero-import:start -->", "<!-- zotero-import:end -->"
+    block = start + "\n\n" + pieces[2].strip() + "\n\n" + end
+    if path.exists():
+        previous = path.read_text()
+        if previous.count(start) != 1 or previous.count(end) != 1:
+            raise PublishError("기존 읽기 메모의 가져오기 구간을 확인할 수 없어 덮어쓰지 않았습니다.")
+        before, remainder = previous.split(start, 1)
+        _, after = remainder.split(end, 1)
+        rendered = before + block + after
+    else:
+        rendered = "---" + pieces[1] + "---\n\n" + block + "\n\n## 내 메모\n\n"
+    path.write_text(rendered)
+    print(f"Zotero 읽기 메모를 가져왔습니다: {path.name}")
+    return path
 
 
 def new_post(args: argparse.Namespace) -> None:
-    title = args.title or input("논문 리뷰 제목: ").strip()
+    values = config()
+    key = choose_item(args.zotero, allow_none=True) if args.zotero or not args.title else None
+    note = import_zotero(key) if key else None
+    item = ZoteroClient().get_item(key) if key else {}
+    paper_title = item.get("data", item).get("title", "")
+    title = args.title or input(f"리뷰 제목 [{paper_title}]: ").strip() or paper_title
     slug = args.slug or input("글 주소에 사용할 짧은 영문 이름 (예: rag-basics): ").strip()
     category = args.category or input("주제 [LLM / RAG / Agent, 기본 LLM]: ").strip() or "LLM"
     if not title:
-        raise SystemExit("제목을 입력하세요.")
+        raise PublishError("리뷰 제목을 입력하세요.")
     if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", slug) or len(slug) > 80:
-        raise SystemExit("글 주소에는 소문자·숫자·하이픈을 사용하세요. 예: rag-basics")
-    today = dt.datetime.now(ZoneInfo("Asia/Seoul")).date().isoformat()
-    destination = ROOT / "posts" / f"{today}-{slug}"
+        raise PublishError("글 주소에는 소문자·숫자·하이픈을 사용하세요.")
+    vault = Path(values["vault"]).resolve()
+    destination = safe_inside(vault / values["reviews"] / f"{slug}.md", vault)
     if destination.exists():
-        raise SystemExit(f"이미 같은 주소의 글이 있습니다: {destination}")
-    source = (ROOT / "templates/paper-review/index.qmd").read_text(encoding="utf-8")
-    source = re.sub(r"^title:.*$", lambda _: f"title: {json.dumps(title, ensure_ascii=False)}", source, count=1, flags=re.M)
-    source = re.sub(r"^categories:.*$", lambda _: f"categories: {json.dumps([category], ensure_ascii=False)}", source, count=1, flags=re.M)
-    source = re.sub(r"^(date|date-modified):.*$", lambda match: f"{match.group(1)}: {today}", source, flags=re.M)
-    destination.mkdir(parents=True)
-    (destination / "index.qmd").write_text(source, encoding="utf-8")
-    shutil.copyfile(ROOT / "templates/paper-review/references.bib.example", destination / "references.bib")
-    print(f"\n초안을 만들었습니다.\n{destination / 'index.qmd'}")
-    print("\n작성 후 draft: false로 바꾸면 웹사이트에 게시됩니다.")
+        raise PublishError("같은 주소의 Obsidian 리뷰가 이미 있습니다.")
+    template = (ROOT / "templates/obsidian-review.md").read_text()
+    body = template.split("---", 2)[2].lstrip()
+    if key:
+        body = body.replace("<!-- ZOTERO_CITATION -->", f"논문: [@{citation_key(key)}]")
+        relative = note.relative_to(vault).with_suffix("").as_posix()
+        body = body.replace("<!-- ZOTERO_NOTE -->", f"[[{relative}|Zotero 읽기 메모]]")
+    else:
+        body = body.replace("<!-- ZOTERO_CITATION -->", "").replace("<!-- ZOTERO_NOTE -->", "")
+    fields = {"title": title, "description": "", "categories": [category], "date": today(),
+              "date-modified": today(), "blog_publish": False, "blog_slug": slug}
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(yaml_header(fields) + body)
+    print(f"\nObsidian 리뷰 초안을 만들었습니다.\n{destination}")
+    print("\n미리보기로 확인한 뒤 blog_publish를 true로 바꾸면 게시할 수 있습니다.")
+
+
+def choose_review(pub: ObsidianPublisher, note: str | None = None):
+    if note:
+        candidate = Path(note).expanduser()
+        if not candidate.is_absolute():
+            candidate = pub.reviews / candidate
+            if not candidate.suffix:
+                candidate = candidate.with_suffix(".md")
+        return pub.review(candidate, allow_draft=True)
+    candidates = pub.candidates(ready_only=False)
+    if not candidates:
+        raise PublishError("먼저 ‘새 글 만들기’에서 Obsidian 리뷰 초안을 작성하세요.")
+    for index, review in enumerate(candidates, 1):
+        state = "공개 선택" if review.meta.get("blog_publish") is True else "개인 초안"
+        print(f"{index}. {review.meta['title']} ({state})")
+    answer = input("미리 볼 리뷰 번호: ").strip()
+    if not answer.isdigit() or not 1 <= int(answer) <= len(candidates):
+        raise PublishError("목록에서 리뷰 번호를 선택하세요.")
+    return candidates[int(answer) - 1]
+
+
+def sync_reviews() -> dict:
+    plan = publisher().sync()
+    for slug in plan["updated"]:
+        print(f"가져온 리뷰: {slug}")
+    for slug in plan["removed"]:
+        print(f"공개 대상에서 제외: {slug}")
+    if not plan["updated"] and not plan["removed"]:
+        print("공개를 선택한 새 리뷰가 없습니다.")
+    return plan
+
+
+def build(*, sync: bool = True) -> None:
+    if sync:
+        sync_reviews()
+    work = ROOT / "work"
+    work.mkdir(exist_ok=True)
+    staging = Path(tempfile.mkdtemp(prefix="site-build-", dir=work))
+    backup = None
+    try:
+        pub = publisher()
+        project = pub.website_project(staging / "project", publishable_paths(pub))
+        run([quarto(), "render", "--output-dir", "_site"], cwd=project)
+        built = project / "_site"
+        if not (built / "index.html").is_file():
+            raise PublishError("생성한 홈페이지를 확인하지 못했습니다.")
+        (built / ".nojekyll").touch()
+        docs = ROOT / "docs"
+        if docs.is_symlink():
+            raise PublishError("docs 폴더가 다른 위치를 가리킵니다.")
+        if docs.exists():
+            backup = Path(tempfile.mkdtemp(prefix="previous-site-", dir=work)) / "docs"
+            docs.rename(backup)
+        built.rename(docs)
+        if backup:
+            shutil.rmtree(backup.parent)
+    finally:
+        if staging.exists():
+            shutil.rmtree(staging)
+
+
+PUBLIC_ROOT = {".gitignore", ".nojekyll", "README.md", "_quarto.yml", "index.qmd", "reviews.qmd",
+               "about.qmd", "review-guide.qmd", "references.bib", "새 글 만들기.command", "미리보기.command",
+               "게시하기.command", "Zotero 가져오기.command", "Obsidian 가져오기.command", "연결 확인.command"}
+PUBLIC_DIRS = {"assets", "styles", "includes", "templates", "scripts", "tests", "docs"}
+SOURCE_ADDITIONS = {"scripts/publishing.py", "scripts/zotero_client.py", "tests/test_publishing.py",
+                    "tests/test_zotero_client.py", "templates/obsidian-review.md"}
+
+
+def publishable_paths(pub: ObsidianPublisher) -> list[str]:
+    tracked = set(subprocess.check_output(["git", "ls-tree", "-r", "--name-only", "-z", "HEAD"], cwd=ROOT).decode().split("\0")) - {""}
+    untracked = set(subprocess.check_output(["git", "ls-files", "--others", "--exclude-standard", "-z"], cwd=ROOT).decode().split("\0")) - {""}
+    indexed = set(subprocess.check_output(["git", "ls-files", "--cached", "-z"], cwd=ROOT).decode().split("\0")) - {""}
+    allowed = set()
+    for name in tracked | untracked | indexed:
+        parts = Path(name).parts
+        known_source = name in tracked or name in SOURCE_ADDITIONS
+        generated = parts and parts[0] == "docs"
+        if name in PUBLIC_ROOT or ((known_source or generated) and parts and parts[0] in PUBLIC_DIRS and not any(p.startswith(".") for p in parts[1:])):
+            allowed.add(name)
+        elif name == "docs/.nojekyll" or name in {"posts/_metadata.yml", "posts/.gitkeep"}:
+            allowed.add(name)
+        elif parts and parts[0] == "posts":
+            if name in tracked and not (ROOT / name).exists():
+                allowed.add(name)
+                continue
+            if len(parts) >= 3:
+                marker = ROOT / "posts" / parts[1] / pub.MARKER
+                if marker.is_file():
+                    values = json.loads(marker.read_text())
+                    if name == str(marker.relative_to(ROOT)) or Path(*parts[2:]).as_posix() in values.get("files", {}):
+                        allowed.add(name)
+                elif name in tracked:
+                    allowed.add(name)
+    return sorted(allowed)
 
 
 def publish() -> None:
-    if not (ROOT / ".git").is_dir():
-        raise SystemExit("먼저 이 폴더를 GitHub 저장소와 연결하세요. README.md를 참고하세요.")
-    repository_root = Path(output(["git", "rev-parse", "--show-toplevel"])).resolve()
-    if repository_root != ROOT:
-        raise SystemExit("블로그 폴더 자체가 Git 저장소여야 합니다.")
-    branch = output(["git", "branch", "--show-current"])
-    if branch != "main":
-        raise SystemExit("게시하려면 먼저 main 브랜치로 이동하세요.")
+    if Path(output(["git", "rev-parse", "--show-toplevel"])).resolve() != ROOT:
+        raise PublishError("블로그 폴더 자체가 Git 저장소여야 합니다.")
+    if output(["git", "branch", "--show-current"]) != "main":
+        raise PublishError("게시하려면 main 브랜치로 이동하세요.")
     remote = output(["git", "remote", "get-url", "origin"])
     if not re.fullmatch(r"(?:https://github\.com/|git@github\.com:)Doyunamic-Kwon/doyunamic-kwon\.github\.io(?:\.git)?", remote, re.I):
-        raise SystemExit("이 블로그의 GitHub 저장소 주소를 확인하세요.")
-    for post in (ROOT / "posts").glob("**/*.qmd"):
-        content = post.read_text(encoding="utf-8")
-        front_matter = content.split("---", 2)
-        if len(front_matter) < 3:
-            raise SystemExit(f"글의 제목·날짜 설정을 확인하세요: {post}")
-        if re.search(r"^draft:\s*true\s*$", front_matter[1], flags=re.M):
-            continue
-        without_comments = re.sub(r"<!--.*?-->", "", content, flags=re.S)
-        if re.search(r"\[(?:논문 제목|핵심 질문|값|Dataset · split)\]", without_comments):
-            raise SystemExit(f"템플릿의 빈 내용을 먼저 작성하거나 draft: true를 유지하세요: {post}")
-    run([quarto(), "render"])
-    (ROOT / "docs/.nojekyll").touch()
-    run(["git", "add", "--all"])
+        raise PublishError("블로그 저장소 주소를 확인하세요.")
+    build()
+    pub = publisher()
+    allowed = publishable_paths(pub)
+    staged = set(subprocess.check_output(["git", "diff", "--cached", "--name-only", "-z"], cwd=ROOT).decode().split("\0")) - {""}
+    if staged - set(allowed):
+        raise PublishError("게시 대상 밖의 파일이 미리 Git에 선택돼 있습니다. 해당 파일을 먼저 확인하세요.")
+    if allowed:
+        run(["git", "add", "--all", "--", *allowed])
     changed = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=ROOT).returncode
     if changed == 1:
-        run(["git", "commit", "-m", "Update blog content and rendered site"])
+        run(["git", "commit", "-m", "Connect Zotero and Obsidian review publishing"])
     elif changed != 0:
-        raise SystemExit("변경 사항을 확인하지 못했습니다.")
+        raise PublishError("게시 변경 사항을 확인하지 못했습니다.")
     run(["git", "push", "origin", "main"])
-    print("\n게시 파일을 올렸습니다. GitHub Pages 반영까지 잠시 걸릴 수 있습니다.")
-    print("https://doyunamic-kwon.github.io")
+    print("\n게시 파일을 올렸습니다. GitHub Pages에 반영되면 아래 주소에서 볼 수 있습니다.")
+    print("https://doyunamic-kwon.github.io/")
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Doyunamic 블로그 관리")
+    parser = argparse.ArgumentParser(description="Doyunamic 논문 리뷰 작성과 게시")
     commands = parser.add_subparsers(dest="command", required=True)
-    new = commands.add_parser("new", help="리뷰 초안 만들기")
+    connect = commands.add_parser("setup", help="Obsidian 작성 폴더와 안내 준비")
+    connect.add_argument("--vault")
+    z = commands.add_parser("zotero", help="Zotero 논문과 메모 가져오기")
+    z.add_argument("key", nargs="?")
+    new = commands.add_parser("new", help="Obsidian에 리뷰 초안 만들기")
     new.add_argument("slug", nargs="?")
     new.add_argument("--title")
     new.add_argument("--category")
-    commands.add_parser("preview", help="작성 중인 글과 디자인 미리보기")
-    commands.add_parser("build", help="공개할 웹사이트 생성")
-    commands.add_parser("publish", help="웹사이트 생성 후 GitHub Pages에 게시")
+    new.add_argument("--zotero")
+    preview = commands.add_parser("preview", help="개인 초안을 별도 복사본으로 미리보기")
+    preview.add_argument("--note")
+    preview.add_argument("--prepare-only", action="store_true")
+    commands.add_parser("sync", help="공개를 선택한 리뷰만 블로그로 가져오기")
+    commands.add_parser("build", help="선택한 리뷰를 반영한 웹사이트 생성")
+    commands.add_parser("publish", help="선택한 리뷰와 블로그를 게시")
+    commands.add_parser("status", help="연결 상태와 공개할 리뷰 수 확인")
     args = parser.parse_args()
-    if args.command == "new":
+    if args.command == "setup":
+        setup(args)
+    elif args.command == "zotero":
+        import_zotero(choose_item(args.key))
+    elif args.command == "new":
         new_post(args)
-    elif args.command == "preview":
-        run([quarto(), "preview"])
+    elif args.command == "sync":
+        sync_reviews()
     elif args.command == "build":
-        run([quarto(), "render"])
+        build()
     elif args.command == "publish":
         publish()
+    elif args.command == "preview":
+        pub = publisher()
+        review = choose_review(pub, args.note)
+        folder = pub.preview_project(review, publishable_paths(pub))
+        if args.prepare_only:
+            print(folder)
+        else:
+            print("개인 미리보기입니다. 이 작업으로 GitHub에 글을 올리지 않습니다.")
+            run([quarto(), "preview", str(folder)])
+    elif args.command == "status":
+        pub = publisher()
+        ZoteroClient().list_items(limit=1)
+        print("Zotero 연결: 정상")
+        print(f"Obsidian 작성 폴더: {pub.reviews}")
+        print(f"공개를 선택한 리뷰: {len(pub.candidates())}편")
 
 
 if __name__ == "__main__":
     try:
         main()
-    except subprocess.CalledProcessError as error:
-        sys.exit(error.returncode)
-
+    except (PublishError, ZoteroError) as error:
+        print(f"\n{error}", file=sys.stderr)
+        sys.exit(1)
+    except (subprocess.CalledProcessError, KeyboardInterrupt):
+        sys.exit(1)

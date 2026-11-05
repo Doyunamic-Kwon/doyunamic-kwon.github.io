@@ -4,10 +4,17 @@ project:
   render:
     - "*.qmd"
     - "posts/**/*.qmd"
+    - "posts/**/*.md"
     - "!templates/"
   resources:
     - assets/
     - .nojekyll
+    - "!work/**"
+    - "!outputs/**"
+    - "!scripts/**"
+    - "!tests/**"
+    - "!templates/**"
+    - "!posts/**/_obsidian-import.json"
 
 lang: ko
 date-format: "YYYY.MM.DD"
