@@ -10,6 +10,6 @@
 <atom:link href="https://doyunamic-kwon.github.io/reviews.xml" rel="self" type="application/rss+xml"/>
 <description>LLM, RAG, Agent 논문의 문제, 방법, 결과를 살펴봅니다.</description>
 <generator>quarto-1.11.9</generator>
-<lastBuildDate>Thu, 05 Nov 2026 07:15:44 GMT</lastBuildDate>
+<lastBuildDate>Thu, 05 Nov 2026 07:18:54 GMT</lastBuildDate>
 </channel>
 </rss>
