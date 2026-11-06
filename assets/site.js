@@ -9,9 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const updateCategories = () => {
+    const normalizePath = path => path.replace(/\/index\.html$/, '/');
     for (const link of document.querySelectorAll('#quarto-sidebar a.sidebar-item-text[href]')) {
       const target = new URL(link.href, location.href);
-      const active = target.pathname === location.pathname && target.hash === location.hash;
+      const active = normalizePath(target.pathname) === normalizePath(location.pathname) && target.hash === location.hash;
       link.classList.toggle('active', active);
       if (active) link.setAttribute('aria-current', 'page');
       else link.removeAttribute('aria-current');

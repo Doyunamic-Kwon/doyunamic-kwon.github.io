@@ -11,9 +11,11 @@ LLM, RAG, Agent 논문을 한국어로 리뷰하는 개인 블로그입니다. Z
 
 Obsidian WIKI의 **Blog → 블로그 작성 안내**를 열면 각 작업을 실행하는 링크와 사용 방법이 있습니다. BLOG 폴더의 `.command` 파일을 열어도 같은 작업을 할 수 있습니다.
 
-왼쪽 메뉴의 분류는 **Blog → 블로그 분류**에서 관리합니다. 체크한 이름만 메뉴에 표시되며, 목록에 새 이름을 추가하거나 순서를 바꾼 뒤 게시하기를 실행하면 반영됩니다. 새 리뷰를 만들 때에도 기존 분류를 선택하거나 새 분류를 만들 수 있습니다.
+왼쪽 메뉴는 **Blog → Reviews의 폴더와 파일 구조**에서 자동으로 만듭니다. Obsidian에서 폴더를 만들거나 글을 옮긴 뒤 게시하기를 실행하면 반영됩니다. 별도 분류 문서는 사용하지 않습니다.
 
-분류를 체크 해제하면 왼쪽 메뉴에서 숨깁니다. 해당 분류의 글은 전체 글에 남습니다. 분류 이름을 바꿀 때에는 기존 리뷰의 `categories`도 같은 이름으로 수정하세요. Zotero에서 가져온 태그는 이 메뉴에 자동으로 추가하지 않습니다.
+`blog_publish: true`로 공개를 선택한 글과 그 글이 들어 있는 폴더만 메뉴에 나타납니다. 파일 이름은 메뉴의 글 이름이 되고, 노트의 `title`은 글 본문의 제목이 됩니다. 폴더나 파일 이름을 바꾸어도 `blog_slug`를 유지하면 글 주소는 유지됩니다. Zotero 태그와 `categories`는 폴더 구조와 별개로 글에 표시됩니다.
+
+새 리뷰를 만들 때에는 기존 저장 폴더를 고르거나 **0. 새 폴더 만들기**에서 `Knowledge Graphs/RAG`처럼 경로를 입력할 수 있습니다. 폴더는 앞에, 글은 뒤에 이름순으로 표시합니다. 공개 글이 없는 폴더와 숨김 폴더는 메뉴에 표시하지 않습니다.
 
 | 파일 | 수행하는 일 |
 |---|---|
@@ -33,7 +35,7 @@ Obsidian WIKI의 **Blog → 블로그 작성 안내**를 열면 각 작업을 �
 
 논문을 선택하면 제목은 `[논문리뷰]:실제 논문명`으로 자동 생성합니다. 제목 아래에는 Zotero의 발표 날짜 또는 연도와 학회·게재처를 표시하고, DOI를 클릭할 수 있는 링크로 넣습니다. Zotero에 없는 정보는 ‘미확인’으로 표시하며 블로그 게시일을 논문 발표일로 사용하지 않습니다.
 
-태그는 선택한 주제와 해당 Zotero 항목의 태그를 합쳐 중복을 제거합니다. 작성 중에는 Obsidian의 `title`, `subtitle`, `categories`와 본문의 DOI를 수정할 수 있습니다.
+태그는 저장한 폴더 이름과 해당 Zotero 항목의 태그를 합쳐 중복을 제거합니다. Reviews에 바로 저장하면 Zotero 태그를 사용합니다. 작성 중에는 Obsidian의 `title`, `subtitle`, `categories`와 본문의 DOI를 수정할 수 있습니다.
 
 `blog_slug`는 글 주소의 마지막 부분입니다. 예를 들어 `rag-basics`이면 `/posts/rag-basics/`로 게시됩니다. 이미 게시한 글의 주소를 바꾸면 예전 링크가 끊길 수 있습니다.
 
@@ -83,6 +85,7 @@ python3 scripts/blog.py status
 ```bash
 python3 scripts/blog.py zotero
 python3 scripts/blog.py new
+python3 scripts/blog.py new paper-review --folder "Knowledge Graphs/RAG"
 python3 scripts/blog.py preview
 python3 scripts/blog.py sync
 python3 scripts/blog.py publish
@@ -105,7 +108,7 @@ GitHub Pages는 **Deploy from a branch → main → /docs** 설정입니다. 게
 | `templates/paper-review/index.qmd` | 기존 Quarto용 상세 리뷰 템플릿 |
 | `scripts/zotero_client.py` | Zotero의 선택 항목을 읽는 연결 기능 |
 | `scripts/paper_metadata.py` | 논문 제목·발표 시기·게재처·태그·DOI 정리 |
-| `scripts/blog_categories.py` | Obsidian의 분류 목록으로 왼쪽 메뉴 생성 |
+| `scripts/obsidian_tree.py` | Obsidian의 폴더·파일 구조로 왼쪽 메뉴 생성 |
 | `scripts/publishing.py` | 리뷰·그림·링크·인용을 공개용 파일로 변환 |
 | `scripts/blog.py` | 작성·미리보기·게시 작업 |
 | `_quarto.yml`, `styles/` | 웹사이트와 디자인 설정 |

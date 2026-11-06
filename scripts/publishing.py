@@ -16,7 +16,7 @@ from urllib.parse import quote, unquote, urlsplit
 import xml.etree.ElementTree as ET
 
 from zotero_client import ZoteroClient, ZoteroError
-from blog_categories import CategoryError, read_categories, render_categories
+from obsidian_tree import FolderError, TreeEntry, render_tree
 
 
 class PublishError(Exception):
@@ -198,8 +198,12 @@ class ObsidianPublisher:
     def candidates(self, *, ready_only: bool = True) -> list[Review]:
         result, slugs = [], set()
         for path in sorted(self.reviews.rglob("*.md")):
+            if any(part.startswith('.') for part in path.relative_to(self.reviews).parts):
+                continue
             meta, _ = self.read(path)
             if ready_only and meta.get("blog_publish") is not True:
+                continue
+            if not ready_only and not meta.get('blog_slug') and meta.get('blog_publish') is not True:
                 continue
             review = self.review(path, allow_draft=not ready_only)
             if review.slug in slugs:
@@ -385,7 +389,9 @@ class ObsidianPublisher:
         (destination / "index.md").write_text(yaml_header(meta) + markdown, encoding="utf-8")
         files = {p.relative_to(destination).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
                  for p in destination.rglob("*") if p.is_file()}
-        marker = {"version": 1, "vault_id": self.vault_id, "source_id": review.source_id, "files": files}
+        relative = review.path.relative_to(self.reviews)
+        marker = {"version": 1, "vault_id": self.vault_id, "source_id": review.source_id, "files": files,
+                  "navigation": {"folders": list(relative.parent.parts), "label": relative.stem}}
         write_json(destination / self.MARKER, marker)
         return marker
 
@@ -456,13 +462,36 @@ class ObsidianPublisher:
                 target = safe_inside(folder / relative, folder)
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(path, target)
-        settings = folder / "_quarto.yml"
+        self.write_navigation(folder)
+        return folder
+
+    def write_navigation(self, project: Path) -> None:
+        entries = []
+        for post in sorted((project / "posts").glob("*")):
+            if not post.is_dir() or not any((post / name).is_file() for name in ("index.md", "index.qmd")):
+                continue
+            marker = post / self.MARKER
+            if not marker.is_file():
+                marker = self.root / "posts" / post.name / self.MARKER
+            navigation = {}
+            if marker.is_file():
+                try:
+                    navigation = json.loads(marker.read_text()).get("navigation", {})
+                except (OSError, ValueError, AttributeError):
+                    raise PublishError("게시한 글의 폴더 정보를 읽지 못했습니다. Obsidian에서 다시 가져오세요.") from None
+            if not isinstance(navigation, dict):
+                raise PublishError("게시한 글의 폴더 정보를 확인하세요.")
+            folders = navigation.get("folders", [])
+            label = navigation.get("label", post.name)
+            if not isinstance(folders, list) or not all(isinstance(part, str) for part in folders) or not isinstance(label, str):
+                raise PublishError("게시한 글의 폴더 정보를 확인하세요.")
+            entries.append(TreeEntry(tuple(folders), label, f"/posts/{post.name}/"))
+        settings = project / "_quarto.yml"
         if settings.is_file():
             try:
-                settings.write_text(render_categories(settings.read_text(), read_categories(self.vault)))
-            except CategoryError as error:
+                settings.write_text(render_tree(settings.read_text(), entries))
+            except FolderError as error:
                 raise PublishError(str(error)) from None
-        return folder
 
     def preview_project(self, review: Review, source_paths: list[str]) -> Path:
         work = self.root / "work"
@@ -479,4 +508,5 @@ class ObsidianPublisher:
             if target.exists():
                 raise PublishError("같은 주소의 기존 블로그 글이 있습니다. blog_slug를 바꿔 주세요.")
             self.export(candidate, target, ready, preview=True)
+        self.write_navigation(folder)
         return folder

@@ -200,21 +200,86 @@ class PublishingChecks(unittest.TestCase):
         target = self.pub().website_project(self.folder / "website-retry", allowed)
         self.assertTrue((target / "posts/review/index.md").is_file())
 
-    def test_website_uses_only_selected_menu_categories_and_keeps_vault_file_private(self):
-        (self.vault / 'Blog/블로그 분류.md').write_text(
-            '# 분류\n\nPRIVATE_PROSE\n\n- [x] Knowledge Graph\n- [ ] PRIVATE_HIDDEN_MENU\n- [x] 메모리\n')
-        original = ('website:\n  sidebar:\n    contents:\n'
-                    '      - text: 전체 글\n        href: reviews.qmd\n'
-                    '      # BLOG-CATEGORIES-START\n      # BLOG-CATEGORIES-END\n')
-        (self.repo / '_quarto.yml').write_text(original)
-        target = self.pub().website_project(self.folder / 'menu-website', ['_quarto.yml'])
-        rendered = (target / '_quarto.yml').read_text()
-        self.assertIn('Knowledge Graph', rendered)
-        self.assertIn('메모리', rendered)
-        self.assertNotIn('PRIVATE_HIDDEN_MENU', rendered)
-        self.assertNotIn('PRIVATE_PROSE', rendered)
-        self.assertFalse((target / 'Blog').exists())
+    def tree_config(self):
+        config = ('website:\n  sidebar:\n    contents:\n'
+                  '      - text: 전체 글\n        href: reviews.qmd\n'
+                  '      # BLOG-TREE-START\n      # BLOG-TREE-END\n')
+        (self.repo / '_quarto.yml').write_text(config)
+        return config
+
+    def test_tree_mirrors_nested_public_folders_and_excludes_private_folders(self):
+        original = self.tree_config()
+        note = self.note('one', title='Metadata article title')
+        target = self.reviews / 'Knowledge Graphs/RAG/Visible Note.md'
+        target.parent.mkdir(parents=True)
+        note.rename(target)
+        draft = self.note('draft', ready=False)
+        hidden_folder = self.reviews / 'PRIVATE_UNPUBLISHED_FOLDER'
+        hidden_folder.mkdir()
+        draft.rename(hidden_folder / draft.name)
+        self.pub().sync()
+        project = self.pub().website_project(self.folder / 'tree-site', ['_quarto.yml', 'posts/one/index.md'])
+        rendered = (project / '_quarto.yml').read_text()
+        for name in ('Knowledge Graphs', 'RAG', 'Visible Note'):
+            self.assertIn(name, rendered)
+        for private in ('PRIVATE_UNPUBLISHED_FOLDER', str(self.vault), 'Blog/Reviews', 'Metadata article title'):
+            self.assertNotIn(private, rendered)
         self.assertEqual((self.repo / '_quarto.yml').read_text(), original)
+
+    def test_moving_note_updates_tree_without_changing_post_url(self):
+        self.tree_config()
+        note = self.note('one')
+        self.pub().sync()
+        target = self.reviews / 'New Folder/New Name.md'
+        target.parent.mkdir()
+        note.rename(target)
+        self.pub().sync()
+        marker = json.loads((self.repo / 'posts/one/_obsidian-import.json').read_text())
+        self.assertEqual(marker['navigation'], {'folders': ['New Folder'], 'label': 'New Name'})
+        project = self.pub().website_project(self.folder / 'moved-tree', ['_quarto.yml', 'posts/one/index.md'])
+        rendered = (project / '_quarto.yml').read_text()
+        self.assertIn('New Folder', rendered)
+        self.assertIn('New Name', rendered)
+        self.assertIn('/posts/one/', rendered)
+
+    def test_withdrawn_review_removes_its_empty_navigation_folder(self):
+        self.tree_config()
+        note = self.note('one')
+        target = self.reviews / 'Folder/one.md'
+        target.parent.mkdir()
+        note.rename(target)
+        self.pub().sync()
+        target.write_text(target.read_text().replace('blog_publish: true', 'blog_publish: false'))
+        self.pub().sync()
+        project = self.pub().website_project(self.folder / 'withdrawn-tree', ['_quarto.yml'])
+        self.assertNotIn('Folder', (project / '_quarto.yml').read_text())
+        self.assertFalse((self.repo / 'posts/one').exists())
+
+    def test_selected_draft_tree_is_built_after_private_preview_export(self):
+        self.tree_config()
+        note = self.note('draft', ready=False)
+        target = self.reviews / 'Private Preview/Draft Name.md'
+        target.parent.mkdir()
+        note.rename(target)
+        pub = self.pub()
+        project = pub.preview_project(pub.review(target, allow_draft=True), ['_quarto.yml'])
+        rendered = (project / '_quarto.yml').read_text()
+        self.assertIn('Private Preview', rendered)
+        self.assertIn('Draft Name', rendered)
+        self.assertFalse((self.repo / 'posts/draft').exists())
+
+    def test_hidden_review_folders_are_not_exported(self):
+        note = self.note('hidden')
+        target = self.reviews / '.private/hidden.md'
+        target.parent.mkdir()
+        note.rename(target)
+        self.pub().sync()
+        self.assertFalse((self.repo / 'posts/hidden').exists())
+
+    def test_unconfigured_private_notes_do_not_block_review_selection(self):
+        note = self.note('one', ready=False)
+        (self.reviews / 'Private scratch note.md').write_text('개인 메모입니다.')
+        self.assertEqual([review.path for review in self.pub().candidates(ready_only=False)], [note])
 
 
 if __name__ == "__main__":

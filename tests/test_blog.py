@@ -37,9 +37,9 @@ class NewReviewChecks(unittest.TestCase):
     def tearDown(self):
         self.temporary.cleanup()
 
-    def create(self, *, title=None, selected=True, category='RAG', answers=None):
+    def create(self, *, title=None, selected=True, category='RAG', folder='', answers=None):
         args = argparse.Namespace(slug='paper-review', title=title, category=category,
-                                  zotero=KEY if selected else None)
+                                  zotero=KEY if selected else None, folder=folder)
         client = Mock()
         client.get_item.return_value = self.item
         client.get_csl.return_value = self.csl
@@ -52,7 +52,8 @@ class NewReviewChecks(unittest.TestCase):
             stack.enter_context(patch('builtins.input', side_effect=answers if answers is not None else AssertionError('Unexpected prompt')))
             stack.enter_context(redirect_stdout(io.StringIO()))
             blog.new_post(args)
-        path = self.vault / 'Blog/Reviews/paper-review.md'
+        path = next((self.vault / 'Blog/Reviews').rglob('paper-review.md'))
+        self.created_path = path
         text = path.read_text()
         header = text.split('---', 2)[1]
         meta = {key: json.loads(value) for key, value in
@@ -104,25 +105,32 @@ class NewReviewChecks(unittest.TestCase):
         client.get_item.assert_not_called()
         client.get_csl.assert_not_called()
 
-    def test_new_review_can_create_a_custom_menu_category(self):
-        meta, _, _ = self.create(category=None, answers=['0', 'Knowledge Graph'])
-        self.assertEqual(meta['categories'][0], 'Knowledge Graph')
-        entries = blog.read_categories(self.vault)
-        self.assertEqual(entries[-1].name, 'Knowledge Graph')
-        self.assertTrue(entries[-1].selected)
+    def test_new_review_can_create_a_nested_folder(self):
+        meta, _, _ = self.create(category=None, folder=None, answers=['0', 'Knowledge Graphs/RAG'])
+        self.assertEqual(meta['categories'][0], 'RAG')
+        self.assertEqual(self.created_path.parent, self.vault / 'Blog/Reviews/Knowledge Graphs/RAG')
 
-    def test_category_choice_uses_the_users_list_and_its_order(self):
-        (self.vault / 'Blog/블로그 분류.md').write_text('- [x] Knowledge Graph\n- [x] Memory\n')
-        meta, _, _ = self.create(category=None, answers=['2'])
+    def test_existing_folder_choice_reuses_actual_folder_structure(self):
+        (self.vault / 'Blog/Reviews/Knowledge Graphs/Memory').mkdir(parents=True)
+        meta, _, _ = self.create(category=None, folder=None, answers=['3'])
+        self.assertEqual(self.created_path.parent, self.vault / 'Blog/Reviews/Knowledge Graphs/Memory')
         self.assertEqual(meta['categories'][0], 'Memory')
-        self.assertEqual([item.name for item in blog.read_categories(self.vault)], ['Knowledge Graph', 'Memory'])
 
-    def test_existing_category_choice_keeps_its_hidden_state(self):
-        (self.vault / 'Blog/블로그 분류.md').write_text('- [ ] RAG\n')
-        self.create(category='rag')
-        entries = blog.read_categories(self.vault)
-        self.assertEqual(entries[0].name, 'RAG')
-        self.assertFalse(entries[0].selected)
+    def test_folder_selection_does_not_depend_on_old_category_document(self):
+        previous = '- [ ] RAG\n- [x] [a malformed old menu]\n'
+        path = self.vault / 'Blog/블로그 분류.md'
+        path.write_text(previous)
+        self.create(category=None)
+        self.assertEqual(path.read_text(), previous)
+        self.assertEqual(self.created_path.parent, self.vault / 'Blog/Reviews')
+
+    def test_duplicate_address_in_another_folder_is_rejected_before_saving(self):
+        existing = self.vault / 'Blog/Reviews/Existing Folder/different-filename.md'
+        existing.parent.mkdir(parents=True)
+        existing.write_text(blog.yaml_header({'title':'Existing review', 'blog_slug':'paper-review', 'blog_publish':False}) + 'Private draft')
+        with self.assertRaisesRegex(blog.PublishError, '같은 글 주소'):
+            self.create(folder='New Folder')
+        self.assertFalse((self.vault / 'Blog/Reviews/New Folder').exists())
 
 
 if __name__ == '__main__':

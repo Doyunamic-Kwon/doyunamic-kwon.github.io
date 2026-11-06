@@ -17,9 +17,9 @@ import uuid
 from zoneinfo import ZoneInfo
 from urllib.parse import quote
 
-from blog_categories import CategoryError, add_category, ensure_categories, read_categories, validate_category
+from obsidian_tree import FolderError, list_review_folders, resolve_review_folder
 from paper_metadata import paper_metadata
-from publishing import ObsidianPublisher, Pandoc, PublishError, safe_inside, write_json, yaml_header
+from publishing import ObsidianPublisher, Pandoc, PublishError, meta_value, safe_inside, write_json, yaml_header
 from zotero_client import ZoteroClient, ZoteroError, citation_key
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -77,7 +77,6 @@ def setup(args: argparse.Namespace) -> None:
     home = safe_inside(vault / "Blog", vault)
     for relative in ("Blog", values["reviews"], values["literature"], values["templates"], "Blog/Assets"):
         safe_inside(vault / relative, vault).mkdir(parents=True, exist_ok=True)
-    ensure_categories(vault)
     identity = home / ".blog-vault-id"
     if not identity.exists():
         identity.write_text(uuid.uuid4().hex + "\n")
@@ -93,7 +92,7 @@ def setup(args: argparse.Namespace) -> None:
         "공개 선택한 리뷰 가져오기": "Obsidian 가져오기.command",
         "블로그 게시하기": "게시하기.command",
     }
-    links = "- [[Blog/블로그 분류|왼쪽 분류 편집]]\n" + "\n".join(f"- [{label}]({(ROOT / name).as_uri()})" for label, name in actions.items())
+    links = "\n".join(f"- [{label}]({(ROOT / name).as_uri()})" for label, name in actions.items())
     marker = "<!-- doyunamic-blog-guide -->"
     guide = f"""---
 title: 블로그 작성 안내
@@ -118,9 +117,11 @@ title: 블로그 작성 안내
 - **Assets**: 리뷰에서 사용할 그림을 보관할 수 있습니다.
 - **Templates**: 논문 리뷰의 기본 틀입니다.
 
-## 왼쪽 분류 바꾸기
+## 폴더와 메뉴
 
-[[Blog/블로그 분류|블로그 분류]]에서 체크한 항목만 왼쪽 메뉴에 표시합니다. 새 항목을 추가하거나 줄 순서를 바꾸고 ‘블로그 게시하기’를 실행하면 반영됩니다. ‘새 리뷰 만들기’에서도 기존 분류를 선택하거나 새 분류를 만들 수 있습니다.
+`Blog/Reviews`의 폴더와 파일 구조가 블로그 왼쪽 메뉴가 됩니다. Obsidian에서 폴더를 만들거나 글을 옮긴 뒤 ‘블로그 게시하기’를 실행하면 반영됩니다. 별도 분류 문서는 사용하지 않습니다.
+
+공개를 선택한 글과 그 글이 들어 있는 폴더만 메뉴에 나타납니다. 폴더 이름을 바꾸거나 글을 옮겨도 `blog_slug`를 유지하면 글 주소는 바뀌지 않습니다. 새 리뷰를 만들 때에는 저장할 폴더를 선택하거나 새 폴더를 만들 수 있습니다.
 
 ## 글을 쓰는 순서
 
@@ -206,25 +207,49 @@ def import_zotero(key: str) -> Path:
     return path
 
 
-def choose_category(vault: Path, supplied: str | None = None) -> str:
-    entries = read_categories(vault)
-    if supplied:
-        name = validate_category(supplied)
-    else:
-        if not entries:
-            return validate_category(input("새 분류 이름: ").strip())
-        for index, entry in enumerate(entries, 1):
-            state = "" if entry.selected else " (메뉴에 숨김)"
-            print(f"{index}. {entry.name}{state}")
-        print("0. 새 분류 만들기")
-        answer = input("분류 번호 [기본 1]: ").strip()
-        if answer == "0":
-            name = validate_category(input("새 분류 이름: ").strip())
-        elif (answer or "1").isdigit() and 1 <= int(answer or "1") <= len(entries):
-            return entries[int(answer or "1") - 1].name
-        else:
-            raise CategoryError("목록에서 분류 번호를 선택하거나 0으로 새 분류를 만드세요.")
-    return next((entry.name for entry in entries if entry.name.casefold() == name.casefold()), name)
+def choose_review_folder(root: Path, supplied: str | None = None) -> Path:
+    if supplied is not None:
+        return resolve_review_folder(root, supplied)
+    folders = list_review_folders(root)
+    for index, relative in enumerate(folders, 1):
+        label = "Reviews에 바로 작성" if relative == "." else relative
+        print(f"{index}. {label}")
+    print("0. 새 폴더 만들기")
+    answer = input("저장할 폴더 번호 [기본 1]: ").strip()
+    if answer == "0":
+        relative = input("새 폴더 경로 (예: Knowledge Graphs/RAG): ").strip()
+        if not relative:
+            raise FolderError("새 폴더 이름을 입력하세요.")
+        return resolve_review_folder(root, relative)
+    if (answer or "1").isdigit() and 1 <= int(answer or "1") <= len(folders):
+        return resolve_review_folder(root, folders[int(answer or "1") - 1])
+    raise FolderError("목록에서 폴더 번호를 선택하거나 0으로 새 폴더를 만드세요.")
+
+
+def ensure_unique_review_slug(reviews: Path, slug: str) -> None:
+    pandoc = None
+    for path in sorted(reviews.rglob("*.md")):
+        if any(part.startswith('.') for part in path.relative_to(reviews).parts):
+            continue
+        path = safe_inside(path, reviews)
+        with path.open(encoding="utf-8-sig") as source:
+            first = source.readline()
+            if first.strip() != "---":
+                continue
+            header = [first]
+            for line in source:
+                header.append(line)
+                if sum(map(len, header)) > 65536:
+                    raise PublishError("기존 리뷰의 속성 영역이 너무 큽니다. 해당 노트를 확인하세요.")
+                if line.strip() in {"---", "..."}:
+                    break
+            else:
+                continue
+        if pandoc is None:
+            pandoc = Pandoc(quarto())
+        field = pandoc.parse(''.join(header)).get('meta', {}).get('blog_slug')
+        if field and meta_value(field) == slug:
+            raise PublishError("다른 폴더의 리뷰가 같은 글 주소를 사용하고 있습니다. 다른 blog_slug를 입력하세요.")
 
 
 def new_post(args: argparse.Namespace) -> None:
@@ -239,7 +264,9 @@ def new_post(args: argparse.Namespace) -> None:
     title = args.title or default_title or input("리뷰 제목: ").strip()
     slug = args.slug or input("글 주소에 사용할 짧은 영문 이름 (예: rag-basics): ").strip()
     vault = Path(values["vault"]).resolve()
-    category = choose_category(vault, args.category)
+    reviews = safe_inside(vault / values["reviews"], vault)
+    review_folder = choose_review_folder(reviews, getattr(args, "folder", None))
+    category = args.category or (review_folder.name if review_folder != reviews else "")
     categories, seen_categories = [], set()
     for tag in [category, *paper.get("tags", [])]:
         tag = tag.strip()
@@ -250,9 +277,10 @@ def new_post(args: argparse.Namespace) -> None:
         raise PublishError("리뷰 제목을 입력하세요.")
     if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", slug) or len(slug) > 80:
         raise PublishError("글 주소에는 소문자·숫자·하이픈을 사용하세요.")
-    destination = safe_inside(vault / values["reviews"] / f"{slug}.md", vault)
+    destination = safe_inside(review_folder / f"{slug}.md", reviews)
     if destination.exists():
         raise PublishError("같은 주소의 Obsidian 리뷰가 이미 있습니다.")
+    ensure_unique_review_slug(reviews, slug)
     template = (ROOT / "templates/obsidian-review.md").read_text()
     body = template.split("---", 2)[2].lstrip()
     if key:
@@ -273,7 +301,6 @@ def new_post(args: argparse.Namespace) -> None:
         fields["subtitle"] = f"논문 발표: {published} · 학회·게재처: {venue}"
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(yaml_header(fields) + body)
-    add_category(vault, category)
     print(f"\nObsidian 리뷰 초안을 만들었습니다.\n{destination}")
     print("\n미리보기로 확인한 뒤 blog_publish를 true로 바꾸면 게시할 수 있습니다.")
 
@@ -309,7 +336,7 @@ def sync_reviews() -> dict:
     return plan
 
 
-def build(*, sync: bool = True) -> None:
+def build(*, sync: bool = True, tracked_posts_only: bool = False) -> None:
     if sync:
         sync_reviews()
     work = ROOT / "work"
@@ -318,7 +345,11 @@ def build(*, sync: bool = True) -> None:
     backup = None
     try:
         pub = publisher()
-        project = pub.website_project(staging / "project", publishable_paths(pub))
+        sources = publishable_paths(pub)
+        if tracked_posts_only:
+            tracked = set(subprocess.check_output(["git", "ls-tree", "-r", "--name-only", "-z", "HEAD"], cwd=ROOT).decode().split("\0"))
+            sources = [name for name in sources if not name.startswith("posts/") or name in tracked]
+        project = pub.website_project(staging / "project", sources)
         run([quarto(), "render", "--output-dir", "_site"], cwd=project)
         built = project / "_site"
         if not (built / "index.html").is_file():
@@ -344,8 +375,8 @@ PUBLIC_ROOT = {".gitignore", ".nojekyll", "README.md", "_quarto.yml", "index.qmd
 PUBLIC_DIRS = {"assets", "styles", "includes", "templates", "scripts", "tests", "docs"}
 SOURCE_ADDITIONS = {"scripts/publishing.py", "scripts/zotero_client.py", "tests/test_publishing.py",
                     "tests/test_zotero_client.py", "templates/obsidian-review.md", "scripts/paper_metadata.py",
-                    "tests/test_paper_metadata.py", "tests/test_blog.py", "scripts/blog_categories.py",
-                    "tests/test_blog_categories.py"}
+                    "tests/test_paper_metadata.py", "tests/test_blog.py", "scripts/obsidian_tree.py",
+                    "tests/test_obsidian_tree.py"}
 
 
 def publishable_paths(pub: ObsidianPublisher) -> list[str]:
@@ -412,7 +443,8 @@ def main() -> None:
     new = commands.add_parser("new", help="Obsidian에 리뷰 초안 만들기")
     new.add_argument("slug", nargs="?")
     new.add_argument("--title")
-    new.add_argument("--category")
+    new.add_argument("--category", help="추가할 태그 (메뉴는 폴더에서 생성)")
+    new.add_argument("--folder", help="Reviews 안의 저장 폴더, 예: Knowledge Graphs/RAG")
     new.add_argument("--zotero")
     preview = commands.add_parser("preview", help="개인 초안을 별도 복사본으로 미리보기")
     preview.add_argument("--note")
@@ -454,7 +486,7 @@ def main() -> None:
 if __name__ == "__main__":
     try:
         main()
-    except (PublishError, ZoteroError, CategoryError) as error:
+    except (PublishError, ZoteroError, FolderError) as error:
         print(f"\n{error}", file=sys.stderr)
         sys.exit(1)
     except (subprocess.CalledProcessError, KeyboardInterrupt):
