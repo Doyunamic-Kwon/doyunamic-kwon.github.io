@@ -27,6 +27,10 @@ Obsidian WIKI의 **Blog → 블로그 작성 안내**를 열면 각 작업을 �
 3. `미리보기.command`에서 리뷰를 선택해 수식·그림·참고문헌을 확인합니다. 이 작업은 GitHub에 글을 올리지 않습니다.
 4. 공개할 리뷰의 `blog_publish`를 `true`로 바꾸고 `게시하기.command`를 실행합니다.
 
+논문을 선택하면 제목은 `[논문리뷰]:실제 논문명`으로 자동 생성합니다. 제목 아래에는 Zotero의 발표 날짜 또는 연도와 학회·게재처를 표시하고, DOI를 클릭할 수 있는 링크로 넣습니다. Zotero에 없는 정보는 ‘미확인’으로 표시하며 블로그 게시일을 논문 발표일로 사용하지 않습니다.
+
+태그는 선택한 주제와 해당 Zotero 항목의 태그를 합쳐 중복을 제거합니다. 작성 중에는 Obsidian의 `title`, `subtitle`, `categories`와 본문의 DOI를 수정할 수 있습니다.
+
 `blog_slug`는 글 주소의 마지막 부분입니다. 예를 들어 `rag-basics`이면 `/posts/rag-basics/`로 게시됩니다. 이미 게시한 글의 주소를 바꾸면 예전 링크가 끊길 수 있습니다.
 
 ## 개인 메모와 공개 리뷰
@@ -96,6 +100,7 @@ GitHub Pages는 **Deploy from a branch → main → /docs** 설정입니다. 게
 | `templates/obsidian-review.md` | Obsidian용 리뷰 템플릿 |
 | `templates/paper-review/index.qmd` | 기존 Quarto용 상세 리뷰 템플릿 |
 | `scripts/zotero_client.py` | Zotero의 선택 항목을 읽는 연결 기능 |
+| `scripts/paper_metadata.py` | 논문 제목·발표 시기·게재처·태그·DOI 정리 |
 | `scripts/publishing.py` | 리뷰·그림·링크·인용을 공개용 파일로 변환 |
 | `scripts/blog.py` | 작성·미리보기·게시 작업 |
 | `_quarto.yml`, `styles/` | 웹사이트와 디자인 설정 |

@@ -1,5 +1,6 @@
 ---
-title: "[논문 제목] — [핵심 질문]"
+title: "[논문리뷰]:[논문 제목]"
+subtitle: ""
 description: ""
 categories: [LLM]
 date: "2026-11-05"
@@ -19,6 +20,8 @@ blog_slug: "paper-review"
 
 <!-- ZOTERO_NOTE -->
 %%
+
+<!-- PAPER_DOI -->
 
 <!-- ZOTERO_CITATION -->
 

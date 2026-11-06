@@ -39,7 +39,9 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 main.content { padding-top: 36px; padding-bottom: 56px; }
 #title-block-header { margin-bottom: 30px; }
 #title-block-header h1.title { font-size: 31px; letter-spacing: -.7px; line-height: 1.45; }
-#title-block-header .subtitle { color: var(--muted); font-size: 17px; margin-top: 12px; }
+#title-block-header .subtitle { color: #687177; font-size: 17px; font-weight: 400; margin-top: 12px; }
+#title-block-header .quarto-category { opacity: 1; color: #687177; text-transform: none; }
+#title-block-header .quarto-category a { text-transform: none; }
 .listing-page #title-block-header { padding-bottom: 13px; border-bottom: 1px solid var(--line); margin-bottom: 0; }
 .listing-page .quarto-title-meta { display: none; }
 .listing-page #title-block-header h1.title { font-size: 17px; letter-spacing: 0; font-weight: 650; color: #626a70; margin: 0; }
