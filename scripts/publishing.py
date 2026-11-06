@@ -16,6 +16,7 @@ from urllib.parse import quote, unquote, urlsplit
 import xml.etree.ElementTree as ET
 
 from zotero_client import ZoteroClient, ZoteroError
+from blog_categories import CategoryError, read_categories, render_categories
 
 
 class PublishError(Exception):
@@ -455,6 +456,12 @@ class ObsidianPublisher:
                 target = safe_inside(folder / relative, folder)
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(path, target)
+        settings = folder / "_quarto.yml"
+        if settings.is_file():
+            try:
+                settings.write_text(render_categories(settings.read_text(), read_categories(self.vault)))
+            except CategoryError as error:
+                raise PublishError(str(error)) from None
         return folder
 
     def preview_project(self, review: Review, source_paths: list[str]) -> Path:

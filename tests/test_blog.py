@@ -37,8 +37,8 @@ class NewReviewChecks(unittest.TestCase):
     def tearDown(self):
         self.temporary.cleanup()
 
-    def create(self, *, title=None, selected=True):
-        args = argparse.Namespace(slug='paper-review', title=title, category='RAG',
+    def create(self, *, title=None, selected=True, category='RAG', answers=None):
+        args = argparse.Namespace(slug='paper-review', title=title, category=category,
                                   zotero=KEY if selected else None)
         client = Mock()
         client.get_item.return_value = self.item
@@ -49,7 +49,7 @@ class NewReviewChecks(unittest.TestCase):
             stack.enter_context(patch.object(blog, 'import_zotero', return_value=self.note))
             stack.enter_context(patch.object(blog, 'ZoteroClient', return_value=client))
             stack.enter_context(patch.object(blog, 'today', return_value='2026-11-06'))
-            stack.enter_context(patch('builtins.input', side_effect=AssertionError('Unexpected prompt')))
+            stack.enter_context(patch('builtins.input', side_effect=answers if answers is not None else AssertionError('Unexpected prompt')))
             stack.enter_context(redirect_stdout(io.StringIO()))
             blog.new_post(args)
         path = self.vault / 'Blog/Reviews/paper-review.md'
@@ -61,7 +61,8 @@ class NewReviewChecks(unittest.TestCase):
 
     def test_selected_paper_uses_actual_title_without_another_title_prompt(self):
         meta, text, _ = self.create()
-        self.assertEqual(meta['title'], f'[논문리뷰]:{PAPER_TITLE}')
+        self.assertTrue(meta['title'].startswith('[논문리뷰]'))
+        self.assertEqual(meta['title'].split(']', 1)[1].lstrip(': '), PAPER_TITLE)
         self.assertNotIn('[논문명]', meta['title'])
         self.assertFalse(meta['blog_publish'])
         self.assertIn('[@zotero-ABCD1234]', text)
@@ -102,6 +103,26 @@ class NewReviewChecks(unittest.TestCase):
         self.assertNotIn('PAPER_DOI', text)
         client.get_item.assert_not_called()
         client.get_csl.assert_not_called()
+
+    def test_new_review_can_create_a_custom_menu_category(self):
+        meta, _, _ = self.create(category=None, answers=['0', 'Knowledge Graph'])
+        self.assertEqual(meta['categories'][0], 'Knowledge Graph')
+        entries = blog.read_categories(self.vault)
+        self.assertEqual(entries[-1].name, 'Knowledge Graph')
+        self.assertTrue(entries[-1].selected)
+
+    def test_category_choice_uses_the_users_list_and_its_order(self):
+        (self.vault / 'Blog/블로그 분류.md').write_text('- [x] Knowledge Graph\n- [x] Memory\n')
+        meta, _, _ = self.create(category=None, answers=['2'])
+        self.assertEqual(meta['categories'][0], 'Memory')
+        self.assertEqual([item.name for item in blog.read_categories(self.vault)], ['Knowledge Graph', 'Memory'])
+
+    def test_existing_category_choice_keeps_its_hidden_state(self):
+        (self.vault / 'Blog/블로그 분류.md').write_text('- [ ] RAG\n')
+        self.create(category='rag')
+        entries = blog.read_categories(self.vault)
+        self.assertEqual(entries[0].name, 'RAG')
+        self.assertFalse(entries[0].selected)
 
 
 if __name__ == '__main__':

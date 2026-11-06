@@ -11,6 +11,10 @@ LLM, RAG, Agent 논문을 한국어로 리뷰하는 개인 블로그입니다. Z
 
 Obsidian WIKI의 **Blog → 블로그 작성 안내**를 열면 각 작업을 실행하는 링크와 사용 방법이 있습니다. BLOG 폴더의 `.command` 파일을 열어도 같은 작업을 할 수 있습니다.
 
+왼쪽 메뉴의 분류는 **Blog → 블로그 분류**에서 관리합니다. 체크한 이름만 메뉴에 표시되며, 목록에 새 이름을 추가하거나 순서를 바꾼 뒤 게시하기를 실행하면 반영됩니다. 새 리뷰를 만들 때에도 기존 분류를 선택하거나 새 분류를 만들 수 있습니다.
+
+분류를 체크 해제하면 왼쪽 메뉴에서 숨깁니다. 해당 분류의 글은 전체 글에 남습니다. 분류 이름을 바꿀 때에는 기존 리뷰의 `categories`도 같은 이름으로 수정하세요. Zotero에서 가져온 태그는 이 메뉴에 자동으로 추가하지 않습니다.
+
 | 파일 | 수행하는 일 |
 |---|---|
 | `Zotero 가져오기.command` | 논문을 선택하고 서지정보·메모·PDF의 텍스트 주석을 Obsidian으로 가져오기 |
@@ -101,6 +105,7 @@ GitHub Pages는 **Deploy from a branch → main → /docs** 설정입니다. 게
 | `templates/paper-review/index.qmd` | 기존 Quarto용 상세 리뷰 템플릿 |
 | `scripts/zotero_client.py` | Zotero의 선택 항목을 읽는 연결 기능 |
 | `scripts/paper_metadata.py` | 논문 제목·발표 시기·게재처·태그·DOI 정리 |
+| `scripts/blog_categories.py` | Obsidian의 분류 목록으로 왼쪽 메뉴 생성 |
 | `scripts/publishing.py` | 리뷰·그림·링크·인용을 공개용 파일로 변환 |
 | `scripts/blog.py` | 작성·미리보기·게시 작업 |
 | `_quarto.yml`, `styles/` | 웹사이트와 디자인 설정 |

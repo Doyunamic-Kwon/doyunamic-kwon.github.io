@@ -200,6 +200,22 @@ class PublishingChecks(unittest.TestCase):
         target = self.pub().website_project(self.folder / "website-retry", allowed)
         self.assertTrue((target / "posts/review/index.md").is_file())
 
+    def test_website_uses_only_selected_menu_categories_and_keeps_vault_file_private(self):
+        (self.vault / 'Blog/블로그 분류.md').write_text(
+            '# 분류\n\nPRIVATE_PROSE\n\n- [x] Knowledge Graph\n- [ ] PRIVATE_HIDDEN_MENU\n- [x] 메모리\n')
+        original = ('website:\n  sidebar:\n    contents:\n'
+                    '      - text: 전체 글\n        href: reviews.qmd\n'
+                    '      # BLOG-CATEGORIES-START\n      # BLOG-CATEGORIES-END\n')
+        (self.repo / '_quarto.yml').write_text(original)
+        target = self.pub().website_project(self.folder / 'menu-website', ['_quarto.yml'])
+        rendered = (target / '_quarto.yml').read_text()
+        self.assertIn('Knowledge Graph', rendered)
+        self.assertIn('메모리', rendered)
+        self.assertNotIn('PRIVATE_HIDDEN_MENU', rendered)
+        self.assertNotIn('PRIVATE_PROSE', rendered)
+        self.assertFalse((target / 'Blog').exists())
+        self.assertEqual((self.repo / '_quarto.yml').read_text(), original)
+
 
 if __name__ == "__main__":
     unittest.main()

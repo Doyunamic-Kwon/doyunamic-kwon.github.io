@@ -44,6 +44,7 @@ website:
     contents:
       - text: 전체 글
         href: reviews.qmd
+      # BLOG-CATEGORIES-START
       - section: 논문 리뷰
         contents:
           - text: LLM
@@ -52,6 +53,7 @@ website:
             href: reviews.qmd#category=RAG
           - text: Agent
             href: reviews.qmd#category=Agent
+      # BLOG-CATEGORIES-END
   search:
     location: navbar
     type: overlay
