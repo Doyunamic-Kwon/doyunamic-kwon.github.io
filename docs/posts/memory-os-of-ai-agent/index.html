@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>[논문리뷰]Knowledge Sheaves – Doyunamic</title>
+<title>[논문리뷰]Memory OS of AI Agent – Doyunamic</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -26,26 +26,7 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for citations */
-div.csl-bib-body { }
-div.csl-entry {
-  clear: both;
-}
-.hanging-indent div.csl-entry {
-  margin-left:2em;
-  text-indent:-2em;
-}
-div.csl-left-margin {
-  min-width:2em;
-  float:left;
-}
-div.csl-right-inline {
-  margin-left:2em;
-  padding-left:1em;
-}
-div.csl-indent {
-  margin-left: 2em;
-}</style>
+</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -96,11 +77,11 @@ div.csl-indent {
 
 
 <link rel="stylesheet" href="../../styles/site.css">
-<meta property="og:title" content="[논문리뷰]Knowledge Sheaves – Doyunamic">
-<meta property="og:description" content="Doyunamic의 논문 리뷰.">
+<meta property="og:title" content="[논문리뷰]Memory OS of AI Agent – Doyunamic">
+<meta property="og:description" content="논문 발표: 2025-05-30 · 학회·게재처: 미확인">
 <meta property="og:site_name" content="Doyunamic">
-<meta name="twitter:title" content="[논문리뷰]Knowledge Sheaves – Doyunamic">
-<meta name="twitter:description" content="Doyunamic의 논문 리뷰.">
+<meta name="twitter:title" content="[논문리뷰]Memory OS of AI Agent – Doyunamic">
+<meta name="twitter:description" content="논문 발표: 2025-05-30 · 학회·게재처: 미확인">
 <meta name="twitter:card" content="summary">
 </head>
 
@@ -125,7 +106,7 @@ div.csl-indent {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="사이드바 전환" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="사이트 이동 경로"><ol class="breadcrumb"><li class="breadcrumb-item">[논문리뷰]Knowledge Sheaves</li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="사이트 이동 경로"><ol class="breadcrumb"><li class="breadcrumb-item">[논문리뷰]Memory OS of AI Agent</li></ol></nav>
         <a class="flex-grow-1" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -150,13 +131,13 @@ div.csl-indent {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <button type="button" class="sidebar-item-text sidebar-item-toggle sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-controls="quarto-sidebar-section-1" aria-expanded="true">
- <span class="menu-text" id="quarto-sidebar-section-1-label">Knowledge Graphs</span><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+ <span class="menu-text" id="quarto-sidebar-section-1-label">Long-term Memory</span><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
       </div>
       <ul id="quarto-sidebar-section-1" aria-labelledby="quarto-sidebar-section-1-label" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../posts/knowledge-sheaves/" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">knowledge-sheaves</span></a>
+  <a href="../../posts/memory-os-of-ai-agent/" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">memory-os-of-ai-agent</span></a>
   </div>
 </li>
       </ul>
@@ -166,29 +147,19 @@ div.csl-indent {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" aria-labelledby="toc-title" class="toc-active">
-    <h2 id="toc-title">이 글에서</h2>
-   
-  <ul class="collapse">
-  <li><a href="#이-글에서-확인할-질문" id="toc-이-글에서-확인할-질문" class="nav-link active" data-scroll-target="#이-글에서-확인할-질문">이 글에서 확인할 질문</a></li>
-  <li><a href="#논문이-해결하려는-문제" id="toc-논문이-해결하려는-문제" class="nav-link" data-scroll-target="#논문이-해결하려는-문제">논문이 해결하려는 문제</a></li>
-  <li><a href="#핵심-방법" id="toc-핵심-방법" class="nav-link" data-scroll-target="#핵심-방법">핵심 방법</a></li>
-  <li><a href="#확인한-결과와-근거" id="toc-확인한-결과와-근거" class="nav-link" data-scroll-target="#확인한-결과와-근거">확인한 결과와 근거</a></li>
-  <li><a href="#지금-내린-답" id="toc-지금-내린-답" class="nav-link" data-scroll-target="#지금-내린-답">지금 내린 답</a></li>
-  <li><a href="#남은-질문" id="toc-남은-질문" class="nav-link" data-scroll-target="#남은-질문">남은 질문</a></li>
-  <li><a href="#참고문헌" id="toc-참고문헌" class="nav-link" data-scroll-target="#참고문헌">참고문헌</a></li>
-  </ul>
-</nav>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content" tabindex="-1">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">[논문리뷰]Knowledge Sheaves</h1>
+<h1 class="title">[논문리뷰]Memory OS of AI Agent</h1>
+<p class="subtitle lead">논문 발표: 2025-05-30 · 학회·게재처: 미확인</p>
   <div class="quarto-categories">
-    <div class="quarto-category">Knowledge Graphs</div>
+    <div class="quarto-category">RAG</div>
+    <div class="quarto-category">Computer Science - Artificial Intelligence</div>
   </div>
   </div>
 
@@ -200,14 +171,14 @@ div.csl-indent {
     <div>
     <div class="quarto-title-meta-heading">공개</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">2026.11.05</p>
+      <p class="date">2026.11.09</p>
     </div>
   </div>
   
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">2026.11.05</p>
+      <p class="date-modified">2026.11.09</p>
     </div>
   </div>
     
@@ -218,44 +189,10 @@ div.csl-indent {
 </header>
 
 
-<p>논문 저자: Thomas Gebhart, Jakob Hansen, Paul Schrater</p>
-<p>논문: <span class="citation" data-cites="zotero-3X6QUYTN">(<a href="#ref-zotero-3X6QUYTN" role="doc-biblioref">Gebhart 기타, 일자 없음</a>)</span></p>
-<section id="이-글에서-확인할-질문" class="level2">
-<h2 class="anchored" data-anchor-id="이-글에서-확인할-질문">이 글에서 확인할 질문</h2>
-<p>[핵심 질문] 테스트테스트</p>
-</section>
-<section id="논문이-해결하려는-문제" class="level2">
-<h2 class="anchored" data-anchor-id="논문이-해결하려는-문제">논문이 해결하려는 문제</h2>
-<p>[이 논문이 다루는 문제와 기존 방법의 한계를 설명한다.]</p>
-</section>
-<section id="핵심-방법" class="level2">
-<h2 class="anchored" data-anchor-id="핵심-방법">핵심 방법</h2>
-<p>[질문에 답하는 데 필요한 방법을 설명한다. 필요한 경우 그림이나 수식을 추가한다.]</p>
-</section>
-<section id="확인한-결과와-근거" class="level2">
-<h2 class="anchored" data-anchor-id="확인한-결과와-근거">확인한 결과와 근거</h2>
-<p>[질문과 관련된 결과를 Dataset·Metric·비교 조건 및 Table·Figure 위치와 함께 적는다.]</p>
-</section>
-<section id="지금-내린-답" class="level2">
-<h2 class="anchored" data-anchor-id="지금-내린-답">지금 내린 답</h2>
-<p>[핵심 질문에 대한 답과 그 답이 성립하는 범위를 설명한다.]</p>
-</section>
-<section id="남은-질문" class="level2">
-<h2 class="anchored" data-anchor-id="남은-질문">남은 질문</h2>
-<p>[아직 확인하지 못한 내용과 추가로 확인할 근거를 적는다.]</p>
-</section>
-<section id="참고문헌" class="level2 unnumbered">
 
 
 
-
-</section>
-
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">참고문헌</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
-<div id="ref-zotero-3X6QUYTN" class="csl-entry" role="listitem">
-Gebhart, Thomas, Jakob Hansen, 와/과 Paul Schrater. 일자 없음. <em>Knowledge Sheaves: A Sheaf-Theoretic Framework for Knowledge Graph Embedding</em>.
-</div>
-</div></section></div></main> <!-- /main -->
+</main> <!-- /main -->
 <script src="../../assets/site.js" defer=""></script>
 
 <script id="quarto-html-after-body" type="application/javascript">
