@@ -10,6 +10,15 @@
 <atom:link href="https://doyunamic-kwon.github.io/reviews.xml" rel="self" type="application/rss+xml"/>
 <description>Doyunamic의 논문 리뷰.</description>
 <generator>quarto-1.11.9</generator>
-<lastBuildDate>Fri, 06 Nov 2026 06:08:27 GMT</lastBuildDate>
+<lastBuildDate>Wed, 04 Nov 2026 15:00:00 GMT</lastBuildDate>
+<item>
+  <title>[논문리뷰]Knowledge Sheaves</title>
+  <dc:creator>Doyunamic </dc:creator>
+  <link>https://doyunamic-kwon.github.io/posts/knowledge-sheaves/</link>
+  <description><![CDATA[ 논문: <span class="citation" data-cites="zotero-3X6QUYTN">(Gebhart 기타, 일자 없음)</span> ]]></description>
+  <category>Knowledge Graphs</category>
+  <guid>https://doyunamic-kwon.github.io/posts/knowledge-sheaves/</guid>
+  <pubDate>Wed, 04 Nov 2026 15:00:00 GMT</pubDate>
+</item>
 </channel>
 </rss>

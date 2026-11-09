@@ -87,7 +87,7 @@ ul.task-list li input[type="checkbox"] {
     const options = {
       valueNames: ['listing-title','listing-date','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
       
-      searchColumns: ["listing-categories"],
+      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description","listing-categories"],
     };
 
     window['quarto-listings'] = window['quarto-listings'] || {};
@@ -182,13 +182,27 @@ window.Quarto = {
  <span class="menu-text">전체 글</span></a>
   </div>
 </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <button type="button" class="sidebar-item-text sidebar-item-toggle sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-controls="quarto-sidebar-section-1" aria-expanded="true">
+ <span class="menu-text" id="quarto-sidebar-section-1-label">Knowledge Graphs</span><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+      </div>
+      <ul id="quarto-sidebar-section-1" aria-labelledby="quarto-sidebar-section-1-label" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./posts/knowledge-sheaves/" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">knowledge-sheaves</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
     </ul>
     </div>
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-    <h5 class="quarto-listing-category-title">분류</h5><div class="quarto-listing-category category-unnumbered"></div></div>
+    <h5 class="quarto-listing-category-title">분류</h5><div class="quarto-listing-category category-unnumbered"><div class="category" data-category="S25vd2xlZGdlJTIwR3JhcGhz">Knowledge Graphs</div></div></div>
 <!-- main -->
 <main class="content" id="quarto-document-content" tabindex="-1">
 
@@ -213,7 +227,25 @@ window.Quarto = {
 
 <div id="listing-all-reviews" class="quarto-listing quarto-listing-container-default">
 <div class="list quarto-listing-default">
+<div class="quarto-post image-right" data-index="0" data-categories="S25vd2xlZGdlJTIwR3JhcGhz" data-listing-date-sort="1793804400000" data-listing-file-modified-sort="1794210159503" data-listing-date-modified-sort="1793804400000" data-listing-reading-time-sort="1" data-listing-word-count-sort="61">
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="./posts/knowledge-sheaves/index.html" class="no-external-icon">[논문리뷰]Knowledge Sheaves</a>
+</h3>
+<div class="listing-categories">
 
+<div class="listing-category" onclick="window.quartoListingCategory('S25vd2xlZGdlJTIwR3JhcGhz'); return false;">Knowledge Graphs</div>
+
+</div>
+</div>
+<div class="metadata">
+<a href="./posts/knowledge-sheaves/index.html" class="no-external-icon">
+<div class="listing-date">
+2026.11.05
+</div>
+</a>
+</div>
+</div>
 </div>
 <div class="listing-no-matching d-none">일치 없음</div>
 </div>

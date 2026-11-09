@@ -1,13 +1,59 @@
 [
   {
-    "objectID": "reviews.html",
-    "href": "reviews.html",
-    "title": "전체 글",
+    "objectID": "posts/knowledge-sheaves/index.html",
+    "href": "posts/knowledge-sheaves/index.html",
+    "title": "[논문리뷰]Knowledge Sheaves",
     "section": "",
-    "text": "일치 없음\n\n아직 게시된 글이 없습니다.",
-    "crumbs": [
-      "전체 글"
-    ]
+    "text": "논문: (Gebhart 기타, 일자 없음)"
+  },
+  {
+    "objectID": "posts/knowledge-sheaves/index.html#이-글에서-확인할-질문",
+    "href": "posts/knowledge-sheaves/index.html#이-글에서-확인할-질문",
+    "title": "[논문리뷰]Knowledge Sheaves",
+    "section": "이 글에서 확인할 질문",
+    "text": "이 글에서 확인할 질문\n[핵심 질문] 테스트테스트"
+  },
+  {
+    "objectID": "posts/knowledge-sheaves/index.html#논문이-해결하려는-문제",
+    "href": "posts/knowledge-sheaves/index.html#논문이-해결하려는-문제",
+    "title": "[논문리뷰]Knowledge Sheaves",
+    "section": "논문이 해결하려는 문제",
+    "text": "논문이 해결하려는 문제\n[이 논문이 다루는 문제와 기존 방법의 한계를 설명한다.]"
+  },
+  {
+    "objectID": "posts/knowledge-sheaves/index.html#핵심-방법",
+    "href": "posts/knowledge-sheaves/index.html#핵심-방법",
+    "title": "[논문리뷰]Knowledge Sheaves",
+    "section": "핵심 방법",
+    "text": "핵심 방법\n[질문에 답하는 데 필요한 방법을 설명한다. 필요한 경우 그림이나 수식을 추가한다.]"
+  },
+  {
+    "objectID": "posts/knowledge-sheaves/index.html#확인한-결과와-근거",
+    "href": "posts/knowledge-sheaves/index.html#확인한-결과와-근거",
+    "title": "[논문리뷰]Knowledge Sheaves",
+    "section": "확인한 결과와 근거",
+    "text": "확인한 결과와 근거\n[질문과 관련된 결과를 Dataset·Metric·비교 조건 및 Table·Figure 위치와 함께 적는다.]"
+  },
+  {
+    "objectID": "posts/knowledge-sheaves/index.html#지금-내린-답",
+    "href": "posts/knowledge-sheaves/index.html#지금-내린-답",
+    "title": "[논문리뷰]Knowledge Sheaves",
+    "section": "지금 내린 답",
+    "text": "지금 내린 답\n[핵심 질문에 대한 답과 그 답이 성립하는 범위를 설명한다.]"
+  },
+  {
+    "objectID": "posts/knowledge-sheaves/index.html#남은-질문",
+    "href": "posts/knowledge-sheaves/index.html#남은-질문",
+    "title": "[논문리뷰]Knowledge Sheaves",
+    "section": "남은 질문",
+    "text": "남은 질문\n[아직 확인하지 못한 내용과 추가로 확인할 근거를 적는다.]"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "최근 글",
+    "section": "",
+    "text": "[논문리뷰]Knowledge Sheaves\n\n\n\nKnowledge Graphs\n\n\n\n\n\n\n2026.11.05\n\n\n\n\n\n일치 없음\n\n아직 게시된 글이 없습니다."
   },
   {
     "objectID": "about.html",
@@ -17,10 +63,13 @@
     "text": "LLM · RAG · Agent\nGitHub"
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "최근 글",
+    "objectID": "reviews.html",
+    "href": "reviews.html",
+    "title": "전체 글",
     "section": "",
-    "text": "일치 없음\n\n아직 게시된 글이 없습니다."
+    "text": "[논문리뷰]Knowledge Sheaves\n\n\n\nKnowledge Graphs\n\n\n\n\n\n\n2026.11.05\n\n\n\n\n\n일치 없음\n\n아직 게시된 글이 없습니다.",
+    "crumbs": [
+      "전체 글"
+    ]
   }
 ]
