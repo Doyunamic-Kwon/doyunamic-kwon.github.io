@@ -68,6 +68,24 @@ main.content { padding-top: 36px; padding-bottom: 56px; }
 .quarto-title-meta { margin-top: 24px; }
 .quarto-title-meta-heading { color: var(--muted); font-size: 11px !important; }
 .quarto-title-meta-contents { font-size: 13px; }
+.article-page #title-block-header { margin-bottom: 2.5rem; }
+.article-page #title-block-header h1.title {
+  font-size: clamp(1.85rem, 4vw, 2.55rem);
+  font-weight: 700;
+  line-height: 1.15;
+}
+.article-page #title-block-header .quarto-title-meta,
+.article-page #title-block-header .quarto-categories { display: none !important; }
+.paper-info {
+  margin: 0 0 2rem;
+  border-inline-start: 5px solid #747b81;
+  padding-inline-start: 1.1rem;
+  color: var(--ink);
+  font-size: clamp(1rem, 2.1vw, 1.2rem);
+}
+.paper-info p { margin: 0; line-height: 1.5; }
+.paper-info a { color: var(--link); text-decoration: none; }
+.paper-info a:hover, .paper-info a:focus-visible { text-decoration: underline; }
 main.content h2 { font-size: 23px; margin-top: 38px; padding-bottom: 9px; line-height: 1.5; }
 main.content h3 { font-size: 19px; }
 main.content > p { line-height: 1.9; }

@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import datetime as dt
+from calendar import month_abbr
 import re
 import unicodedata
-from urllib.parse import unquote, urlsplit
+from urllib.parse import quote, unquote, urlsplit
 
-from zotero_client import _plain
+from zotero_client import _plain, _url, csl_author_names
 
 
 _LOCAL_PATH = re.compile(
@@ -129,3 +130,39 @@ def paper_metadata(item: dict, csl: dict) -> dict:
         "tags": tags,
         "doi": _doi(data.get("DOI")) or _doi(csl.get("DOI")),
     }
+
+
+def review_subtitle(value: object) -> tuple[str, str] | None:
+    """Read the date and venue saved by the earlier review template."""
+    match = re.fullmatch(r"논문 발표: (.+?) · 학회·게재처: (.+)", _clean(value))
+    if match:
+        published, venue = match.groups()
+        return (published if published != "미확인" else "", venue if venue != "미확인" else "")
+    return None
+
+
+def review_paper_info(fields: dict, reference: dict, legacy_doi: str) -> tuple[str, list[tuple[str, str]], list[str]]:
+    published, venue = review_subtitle(fields.get("subtitle")) or ("", "")
+    recorded = paper_metadata({}, reference)
+    venue = _clean(fields.get("paper_venue")) or venue or recorded["venue"]
+    published = _date_text(fields.get("paper_date")) or published or recorded["published"]
+    if re.fullmatch(r"[0-9]{4}-[0-9]{2}(?:-[0-9]{2})?", published) and _date_text(published):
+        year, month, *day = published.split("-")
+        published = " ".join([*(str(int(part)) for part in day), month_abbr[int(month)], year])
+
+    doi = legacy_doi or recorded["doi"]
+    paper_url = f"https://doi.org/{quote(doi, safe='/')}" if doi else reference.get("URL")
+    links = []
+    for label, url in (("Paper", paper_url), ("Page", fields.get("paper_page")),
+                       ("GitHub", fields.get("paper_github"))):
+        if target := _url(url):
+            links.append((label, target))
+
+    affiliations = fields.get("paper_affiliations", [])
+    if isinstance(affiliations, str):
+        affiliations = [affiliations]
+    institutions = []
+    if isinstance(affiliations, list):
+        institutions = list(dict.fromkeys(value for name in affiliations if (value := _clean(name))))
+    lines = [", ".join(csl_author_names(reference)), " | ".join(institutions), published]
+    return venue, links, list(filter(None, lines))

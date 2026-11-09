@@ -66,6 +66,7 @@ class NewReviewChecks(unittest.TestCase):
         self.assertEqual(meta['title'].split(']', 1)[1].lstrip(': '), PAPER_TITLE)
         self.assertNotIn('[논문명]', meta['title'])
         self.assertFalse(meta['blog_publish'])
+        self.assertEqual(meta['zotero_key'], KEY)
         self.assertIn('[@zotero-ABCD1234]', text)
         self.assertIn('[[Blog/Literature/paper|Zotero 읽기 메모]]', text)
 

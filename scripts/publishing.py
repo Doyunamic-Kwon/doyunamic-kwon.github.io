@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 import hashlib
+from itertools import takewhile
 import json
 import os
 from pathlib import Path
@@ -15,8 +16,9 @@ import tempfile
 from urllib.parse import quote, unquote, urlsplit
 import xml.etree.ElementTree as ET
 
-from zotero_client import ZoteroClient, ZoteroError, csl_author_names
 from obsidian_tree import FolderError, TreeEntry, render_tree
+from paper_metadata import _doi, review_paper_info, review_subtitle
+from zotero_client import ZoteroClient, ZoteroError, citation_key
 
 
 class PublishError(Exception):
@@ -116,20 +118,41 @@ def meta_value(value: dict) -> object:
     return inline_text(content).strip()
 
 
-def reviewed_paper_id(blocks: list[dict]) -> str | None:
-    """Use the explicit paper citation inserted by the review template."""
-    ids = set()
-    for block in blocks:
-        if block["t"] != "Para" or not block["c"]:
-            continue
+def paper_citation_id(block: dict) -> str | None:
+    if block["t"] == "Para" and block["c"]:
         *label, cite = block["c"]
-        if inline_text(block["c"]).lstrip().startswith("논문 저자:"):
-            return None
-        if cite["t"] == "Cite" and inline_text(label).strip() == "논문:":
-            citations = cite["c"][0]
-            if len(citations) == 1:
-                ids.add(citations[0]["citationId"])
-    return next(iter(ids)) if len(ids) == 1 else None
+        if cite["t"] == "Cite" and inline_text(label).strip() == "논문:" and len(cite["c"][0]) == 1:
+            return cite["c"][0][0]["citationId"]
+    return None
+
+
+def paper_doi(block: dict) -> str | None:
+    if block["t"] != "Para" or not block["c"]:
+        return None
+    *label, value = block["c"]
+    if inline_text(label).strip() != "DOI:":
+        return None
+    if value["t"] == "Link":
+        return _doi(value["c"][2][0]) or None
+    text = inline_text(value)
+    return "" if text == "미확인" else _doi(text) or None
+
+
+def paper_info_block(venue: str, links: list[tuple[str, str]], lines: list[str]) -> dict | None:
+    intro = [{"t": "Str", "c": venue.rstrip(".") + "."}] if venue else []
+    for label, target in links:
+        if intro:
+            intro.append({"t": "Space"})
+        intro.extend([
+            {"t": "Str", "c": "["},
+            {"t": "Link", "c": [["", [], []], [{"t": "Str", "c": label}], [target, ""]]},
+            {"t": "Str", "c": "]"},
+        ])
+    paragraphs = [{"t": "Para", "c": intro}] if intro else []
+    paragraphs.extend({"t": "Para", "c": [{"t": "Str", "c": text}]} for text in lines)
+    if paragraphs:
+        return {"t": "Div", "c": [["", ["paper-info"], []], paragraphs]}
+    return None
 
 
 class Pandoc:
@@ -371,6 +394,16 @@ class ObsidianPublisher:
             return node
 
         document["blocks"] = transform(document["blocks"])
+        intro = list(takewhile(lambda block: block["t"] != "Header", document["blocks"]))
+        legacy_citations = {index: paper_id for index, block in enumerate(intro)
+                            if (paper_id := paper_citation_id(block))}
+        legacy_ids = set(legacy_citations.values())
+        zotero_key = review.meta.get("zotero_key")
+        paper_id = citation_key(zotero_key) if zotero_key else None
+        if not paper_id and len(legacy_ids) == 1:
+            paper_id = next(iter(legacy_ids))
+        if paper_id:
+            citations.add(paper_id)
         keys = []
         for citation in sorted(citations):
             if re.match(r"^(?:fig|tbl|eq|sec|lst)-", citation):
@@ -382,18 +415,28 @@ class ObsidianPublisher:
             references = self.client.export_references(keys) if keys else []
         except ZoteroError as error:
             raise PublishError(str(error)) from None
-        paper_id = reviewed_paper_id(document["blocks"])
         paper = next((reference for reference in references if reference["id"] == paper_id), {})
-        authors = csl_author_names(paper)
-        if authors:
-            author_line = {"t": "Str", "c": f"논문 저자: {', '.join(authors)}"}
-            document["blocks"].insert(0, {"t": "Para", "c": [author_line]})
+        doi_index, legacy_doi = next(((i, doi) for i, block in enumerate(intro)
+                                      if (doi := paper_doi(block)) is not None), (None, ""))
+        venue, links, lines = review_paper_info(review.meta, paper, legacy_doi)
+        header = paper_info_block(venue, links, lines)
+        replaced_citations = set()
+        if header:
+            if "Paper" in dict(links):
+                replaced_citations = {index for index, key in legacy_citations.items() if key == paper_id}
+            document["blocks"] = [header, *(block for index, block in enumerate(document["blocks"])
+                                            if index != doi_index and index not in replaced_citations)]
         markdown = self.pandoc.markdown(document)
         if not preview and re.search(r"\[(?:논문 제목|핵심 질문|값|Dataset · split)\]", markdown):
             raise PublishError("리뷰 본문에 템플릿의 빈 항목이 남아 있습니다.")
         if re.search(r"(?:file://|obsidian://|/(?:Users|home|private)/|[A-Za-z]:\\)", markdown, re.I):
             raise PublishError("공개 글에 개인 파일 경로가 남아 있습니다.")
         meta = {k: v for k, v in review.meta.items() if k in self.PUBLIC_FIELDS}
+        meta["title"] = re.sub(r"^\[논문리뷰\]:?\s*", "[논문리뷰] ", meta["title"])
+        if review_subtitle(meta.get("subtitle")) is not None:
+            meta.pop("subtitle")
+        if replaced_citations:
+            meta["nocite"] = f"[@{paper_id}]"
         for field in ("date", "date-modified"):
             if field in meta:
                 try:

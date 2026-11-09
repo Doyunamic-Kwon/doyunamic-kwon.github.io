@@ -127,7 +127,7 @@ title: 블로그 작성 안내
 
 1. Zotero를 열고 ‘Zotero 논문 가져오기’에서 논문을 선택합니다.
 2. ‘새 리뷰 만들기’에서 해당 논문 또는 직접 작성할 제목을 선택합니다.
-   논문을 고르면 제목은 `[논문리뷰] 실제 논문명`으로 만들어집니다. 제목 아래의 발표 시기·학회 또는 게재처·DOI와 태그도 Zotero 정보로 채웁니다. 정보가 없으면 ‘미확인’으로 표시합니다.
+   논문을 고르면 제목은 `[논문리뷰] 실제 논문명`으로 만들어집니다. 블로그 제목 아래에는 Zotero에서 가져온 서지정보를 표시합니다. 소속과 별도 링크는 리뷰 속성에 추가할 수 있습니다.
 3. Reviews의 Markdown 파일에서 질문 하나와 잠정적인 답을 먼저 적고, 근거를 확인하며 설명을 고칩니다.
 4. ‘선택한 리뷰 미리보기’로 수식·그림·참고문헌을 확인합니다. `blog_publish: false`인 초안도 개인 미리보기로 볼 수 있습니다.
 5. 공개할 때 `blog_publish: true`로 바꾸고 ‘블로그 게시하기’를 실행합니다.
@@ -260,7 +260,7 @@ def new_post(args: argparse.Namespace) -> None:
     if key:
         client = ZoteroClient()
         paper = paper_metadata(client.get_item(key), client.get_csl(key))
-    default_title = f"[논문리뷰]{paper['title']}" if paper.get("title") else ""
+    default_title = f"[논문리뷰] {paper['title']}" if paper.get("title") else ""
     title = args.title or default_title or input("리뷰 제목: ").strip()
     slug = args.slug or input("글 주소에 사용할 짧은 영문 이름 (예: rag-basics): ").strip()
     vault = Path(values["vault"]).resolve()
@@ -296,6 +296,7 @@ def new_post(args: argparse.Namespace) -> None:
     fields = {"title": title, "description": "", "categories": categories, "date": today(),
               "date-modified": today(), "blog_publish": False, "blog_slug": slug}
     if key:
+        fields["zotero_key"] = key
         published = paper["published"] or "미확인"
         venue = paper["venue"] or "미확인"
         fields["subtitle"] = f"논문 발표: {published} · 학회·게재처: {venue}"

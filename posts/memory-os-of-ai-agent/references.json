@@ -1,0 +1,30 @@
+[
+  {
+    "id": "zotero-VD94VL79",
+    "type": "article",
+    "author": [
+      {
+        "given": "Jiazheng",
+        "family": "Kang"
+      },
+      {
+        "given": "Mingming",
+        "family": "Ji"
+      },
+      {
+        "given": "Zhe",
+        "family": "Zhao"
+      },
+      {
+        "given": "Ting",
+        "family": "Bai"
+      }
+    ],
+    "DOI": "10.48550/arXiv.2506.06326",
+    "title": "Memory OS of AI Agent",
+    "language": "en",
+    "publisher": "arXiv",
+    "URL": "http://arxiv.org/abs/2506.06326",
+    "number": "arXiv:2506.06326"
+  }
+]

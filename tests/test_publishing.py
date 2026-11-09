@@ -132,15 +132,36 @@ class PublishingChecks(unittest.TestCase):
         note = self.note(body="논문: [@zotero-WXYZ5678]\n\n관련 연구 [@zotero-ABCD1234].")
         references = [
             {"id": "zotero-ABCD1234", "author": [{"literal": "Other Authors"}]},
-            {"id": "zotero-WXYZ5678", "author": [{"given": "Jiazheng", "family": "Kang"},
-                                                  {"literal": "Research Group"}]},
+            {"id": "zotero-WXYZ5678", "DOI": "10.1234/reviewed",
+             "author": [{"given": "Jiazheng", "family": "Kang"}, {"literal": "Research Group"}]},
         ]
         with patch.object(self.client, "export_references", return_value=references):
             self.pub().sync()
         copied = (self.repo / "posts/review/index.md").read_text()
-        self.assertIn("논문 저자: Jiazheng Kang, Research Group", copied)
+        self.assertIn("::: paper-info", copied)
+        self.assertIn("Jiazheng Kang, Research Group", copied)
         self.assertNotIn("Other Authors", copied)
-        self.assertNotIn("논문 저자:", note.read_text())
+        self.assertIn('nocite: "[@zotero-WXYZ5678]"', copied)
+        self.assertNotIn("논문: [@zotero-WXYZ5678]", copied)
+        self.assertIn("논문: [@zotero-WXYZ5678]", note.read_text())
+
+    def test_paper_header_uses_saved_zotero_key_even_when_the_body_is_empty(self):
+        self.note(body="", zotero_key="WXYZ5678", title="[논문리뷰]Paper",
+                  subtitle="논문 발표: 2025-05-30 · 학회·게재처: 미확인", paper_venue="EMNLP 2025",
+                  paper_affiliations=["University", "Research Lab"], paper_page="https://example.org/paper",
+                  paper_github="https://github.com/example/project")
+        reference = {"id": "zotero-WXYZ5678", "URL": "https://example.org/full-text",
+                     "author": [{"literal": "Paper Author"}]}
+        with patch.object(self.client, "export_references", return_value=[reference]) as get_references:
+            self.pub().sync()
+        get_references.assert_called_once_with(["WXYZ5678"])
+        copied = (self.repo / "posts/review/index.md").read_text()
+        for text in ("[논문리뷰] Paper", "EMNLP 2025.", "[Paper](https://example.org/full-text)",
+                     "[Page](https://example.org/paper)", "[GitHub](https://github.com/example/project)",
+                     "Paper Author", r"University \| Research Lab", "30 May 2025"):
+            self.assertIn(text, copied)
+        self.assertNotIn("미확인", copied)
+        self.assertNotIn("zotero_key:", copied)
 
     def test_withdrawal_preserves_unmanaged_content(self):
         path = self.note()
