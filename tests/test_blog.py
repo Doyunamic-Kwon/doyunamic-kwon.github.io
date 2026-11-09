@@ -33,6 +33,7 @@ class NewReviewChecks(unittest.TestCase):
         self.csl = {'type': 'paper-conference', 'title': PAPER_TITLE,
                     'issued': {'date-parts': [[2024, 6, 1]]},
                     'container-title': 'Proceedings of ACL', 'DOI': '10.1234/test_(v2)'}
+        self.lookup_fields = {}
 
     def tearDown(self):
         self.temporary.cleanup()
@@ -48,6 +49,7 @@ class NewReviewChecks(unittest.TestCase):
                 'vault': str(self.vault), 'reviews': 'Blog/Reviews'}))
             stack.enter_context(patch.object(blog, 'import_zotero', return_value=self.note))
             stack.enter_context(patch.object(blog, 'ZoteroClient', return_value=client))
+            self.lookup = stack.enter_context(patch.object(blog, 'lookup_paper_fields', return_value=self.lookup_fields))
             stack.enter_context(patch.object(blog, 'today', return_value='2026-11-06'))
             stack.enter_context(patch('builtins.input', side_effect=answers if answers is not None else AssertionError('Unexpected prompt')))
             stack.enter_context(redirect_stdout(io.StringIO()))
@@ -77,6 +79,14 @@ class NewReviewChecks(unittest.TestCase):
         self.assertEqual(meta['date'], '2026-11-06')
         self.assertEqual(meta['date-modified'], '2026-11-06')
 
+    def test_lookup_fields_are_saved_with_the_selected_zotero_item(self):
+        self.lookup_fields = {'paper_venue': 'ACL 2024', 'paper_affiliations': ['Example University'],
+                              'paper_url': 'https://doi.org/10.1234/test', 'paper_page': 'https://example.org/paper',
+                              'paper_github': 'https://github.com/example/paper'}
+        meta, _, _ = self.create()
+        self.assertEqual({key: meta[key] for key in self.lookup_fields}, self.lookup_fields)
+        self.lookup.assert_called_once_with(self.item, self.csl, blog.paper_metadata(self.item, self.csl))
+
     def test_zotero_tags_merge_with_topic_and_doi_is_a_clickable_link(self):
         meta, text, _ = self.create()
         self.assertEqual(meta['categories'], ['RAG', 'Agent'])
@@ -105,6 +115,7 @@ class NewReviewChecks(unittest.TestCase):
         self.assertNotIn('PAPER_DOI', text)
         client.get_item.assert_not_called()
         client.get_csl.assert_not_called()
+        self.lookup.assert_not_called()
 
     def test_new_review_can_create_a_nested_folder(self):
         meta, _, _ = self.create(category=None, folder=None, answers=['0', 'Knowledge Graphs/RAG'])

@@ -35,9 +35,11 @@ Obsidian WIKI의 **Blog → 블로그 작성 안내**를 열면 각 작업을 �
 
 논문을 선택하면 제목은 `[논문리뷰] 실제 논문명`으로 자동 생성합니다. 제목 아래에는 학회·링크, 저자, 소속, 논문 날짜를 순서대로 표시합니다. `Paper`는 DOI 또는 Zotero에 등록된 논문 링크를 사용합니다.
 
-학회나 날짜를 보완하려면 리뷰 속성의 `paper_venue`와 `paper_date`를 사용하세요. 소속 목록은 `paper_affiliations`에, 별도 페이지와 저장소 링크는 `paper_page`와 `paper_github`에 넣을 수 있습니다.
+새 리뷰는 Zotero의 DOI나 arXiv ID를 기준으로 공개 서지 기록과 논문을 조회합니다. 논문의 소속 표기를 우선하고 `Page`는 확인된 프로젝트 페이지 또는 출판 페이지를 사용합니다. 조회할 수 없는 항목은 빈 채로 리뷰를 만듭니다.
 
-태그는 저장한 폴더 이름과 해당 Zotero 항목의 태그를 합쳐 중복을 제거합니다. Reviews에 바로 저장하면 Zotero 태그를 사용합니다. 작성 중에는 Obsidian의 `title`, `subtitle`, `categories`와 본문의 DOI를 수정할 수 있습니다.
+학회·날짜·소속은 리뷰 속성의 `paper_venue`, `paper_date`, `paper_affiliations`에서 수정할 수 있습니다. `Paper`, `Page`, `GitHub` 링크는 `paper_url`, `paper_page`, `paper_github`에서 수정하세요.
+
+태그는 저장한 폴더 이름과 해당 Zotero 항목의 태그를 합쳐 중복을 제거합니다. Reviews에 바로 저장하면 Zotero 태그를 사용합니다. 작성 중에는 Obsidian의 `title`, `subtitle`, `categories`를 수정할 수 있습니다.
 
 `blog_slug`는 글 주소의 마지막 부분입니다. 예를 들어 `rag-basics`이면 `/posts/rag-basics/`로 게시됩니다. 이미 게시한 글의 주소를 바꾸면 예전 링크가 끊길 수 있습니다.
 
@@ -109,7 +111,7 @@ GitHub Pages는 **Deploy from a branch → main → /docs** 설정입니다. 게
 | `templates/obsidian-review.md` | Obsidian용 리뷰 템플릿 |
 | `templates/paper-review/index.qmd` | 기존 Quarto용 상세 리뷰 템플릿 |
 | `scripts/zotero_client.py` | Zotero의 선택 항목을 읽는 연결 기능 |
-| `scripts/paper_metadata.py` | 논문 제목·발표 시기·게재처·태그·DOI 정리 |
+| `scripts/paper_metadata.py`, `scripts/paper_lookup.py` | Zotero와 공개 논문에서 제목 영역의 정보 정리 |
 | `scripts/obsidian_tree.py` | Obsidian의 폴더·파일 구조로 왼쪽 메뉴 생성 |
 | `scripts/publishing.py` | 리뷰·그림·링크·인용을 공개용 파일로 변환 |
 | `scripts/blog.py` | 작성·미리보기·게시 작업 |

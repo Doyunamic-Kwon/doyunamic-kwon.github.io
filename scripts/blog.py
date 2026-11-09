@@ -18,6 +18,7 @@ from zoneinfo import ZoneInfo
 from urllib.parse import quote
 
 from obsidian_tree import FolderError, list_review_folders, resolve_review_folder
+from paper_lookup import lookup_paper_fields
 from paper_metadata import paper_metadata
 from publishing import ObsidianPublisher, Pandoc, PublishError, meta_value, safe_inside, write_json, yaml_header
 from zotero_client import ZoteroClient, ZoteroError, citation_key
@@ -127,7 +128,7 @@ title: 블로그 작성 안내
 
 1. Zotero를 열고 ‘Zotero 논문 가져오기’에서 논문을 선택합니다.
 2. ‘새 리뷰 만들기’에서 해당 논문 또는 직접 작성할 제목을 선택합니다.
-   논문을 고르면 제목은 `[논문리뷰] 실제 논문명`으로 만들어집니다. 블로그 제목 아래에는 Zotero에서 가져온 서지정보를 표시합니다. 소속과 별도 링크는 리뷰 속성에 추가할 수 있습니다.
+   논문을 고르면 제목은 `[논문리뷰] 실제 논문명`으로 만들어집니다. 학회·소속과 논문·프로젝트·GitHub 링크는 공개 자료에서 확인되는 항목을 채웁니다. 리뷰 속성에서 보완할 수 있습니다.
 3. Reviews의 Markdown 파일에서 질문 하나와 잠정적인 답을 먼저 적고, 근거를 확인하며 설명을 고칩니다.
 4. ‘선택한 리뷰 미리보기’로 수식·그림·참고문헌을 확인합니다. `blog_publish: false`인 초안도 개인 미리보기로 볼 수 있습니다.
 5. 공개할 때 `blog_publish: true`로 바꾸고 ‘블로그 게시하기’를 실행합니다.
@@ -259,7 +260,8 @@ def new_post(args: argparse.Namespace) -> None:
     paper = {}
     if key:
         client = ZoteroClient()
-        paper = paper_metadata(client.get_item(key), client.get_csl(key))
+        item, reference = client.get_item(key), client.get_csl(key)
+        paper = paper_metadata(item, reference)
     default_title = f"[논문리뷰] {paper['title']}" if paper.get("title") else ""
     title = args.title or default_title or input("리뷰 제목: ").strip()
     slug = args.slug or input("글 주소에 사용할 짧은 영문 이름 (예: rag-basics): ").strip()
@@ -300,6 +302,8 @@ def new_post(args: argparse.Namespace) -> None:
         published = paper["published"] or "미확인"
         venue = paper["venue"] or "미확인"
         fields["subtitle"] = f"논문 발표: {published} · 학회·게재처: {venue}"
+        print("학회·소속과 논문 링크를 확인합니다.")
+        fields.update(lookup_paper_fields(item, reference, paper))
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(yaml_header(fields) + body)
     print(f"\nObsidian 리뷰 초안을 만들었습니다.\n{destination}")
@@ -377,7 +381,7 @@ PUBLIC_DIRS = {"assets", "styles", "includes", "templates", "scripts", "tests", 
 SOURCE_ADDITIONS = {"scripts/publishing.py", "scripts/zotero_client.py", "tests/test_publishing.py",
                     "tests/test_zotero_client.py", "templates/obsidian-review.md", "scripts/paper_metadata.py",
                     "tests/test_paper_metadata.py", "tests/test_blog.py", "scripts/obsidian_tree.py",
-                    "tests/test_obsidian_tree.py"}
+                    "tests/test_obsidian_tree.py", "scripts/paper_lookup.py", "tests/test_paper_lookup.py"}
 
 
 def publishable_paths(pub: ObsidianPublisher) -> list[str]:

@@ -151,7 +151,8 @@ def review_paper_info(fields: dict, reference: dict, legacy_doi: str) -> tuple[s
         published = " ".join([*(str(int(part)) for part in day), month_abbr[int(month)], year])
 
     doi = legacy_doi or recorded["doi"]
-    paper_url = f"https://doi.org/{quote(doi, safe='/')}" if doi else reference.get("URL")
+    doi_url = f"https://doi.org/{quote(doi, safe='/')}" if doi else ""
+    paper_url = _url(fields.get("paper_url")) or doi_url or reference.get("URL")
     links = []
     for label, url in (("Paper", paper_url), ("Page", fields.get("paper_page")),
                        ("GitHub", fields.get("paper_github"))):
