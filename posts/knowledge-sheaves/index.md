@@ -9,6 +9,8 @@ toc: true
 bibliography: "references.json"
 ---
 
+논문 저자: Thomas Gebhart, Jakob Hansen, Paul Schrater
+
 논문: [@zotero-3X6QUYTN]
 
 ## 이 글에서 확인할 질문

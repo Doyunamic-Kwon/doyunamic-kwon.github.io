@@ -15,7 +15,7 @@ import tempfile
 from urllib.parse import quote, unquote, urlsplit
 import xml.etree.ElementTree as ET
 
-from zotero_client import ZoteroClient, ZoteroError
+from zotero_client import ZoteroClient, ZoteroError, csl_author_names
 from obsidian_tree import FolderError, TreeEntry, render_tree
 
 
@@ -114,6 +114,22 @@ def meta_value(value: dict) -> object:
     if kind == "MetaMap":
         return {k: meta_value(v) for k, v in content.items()}
     return inline_text(content).strip()
+
+
+def reviewed_paper_id(blocks: list[dict]) -> str | None:
+    """Use the explicit paper citation inserted by the review template."""
+    ids = set()
+    for block in blocks:
+        if block["t"] != "Para" or not block["c"]:
+            continue
+        *label, cite = block["c"]
+        if inline_text(block["c"]).lstrip().startswith("논문 저자:"):
+            return None
+        if cite["t"] == "Cite" and inline_text(label).strip() == "논문:":
+            citations = cite["c"][0]
+            if len(citations) == 1:
+                ids.add(citations[0]["citationId"])
+    return next(iter(ids)) if len(ids) == 1 else None
 
 
 class Pandoc:
@@ -355,11 +371,6 @@ class ObsidianPublisher:
             return node
 
         document["blocks"] = transform(document["blocks"])
-        markdown = self.pandoc.markdown(document)
-        if not preview and re.search(r"\[(?:논문 제목|핵심 질문|값|Dataset · split)\]", markdown):
-            raise PublishError("리뷰 본문에 템플릿의 빈 항목이 남아 있습니다.")
-        if re.search(r"(?:file://|obsidian://|/(?:Users|home|private)/|[A-Za-z]:\\)", markdown, re.I):
-            raise PublishError("공개 글에 개인 파일 경로가 남아 있습니다.")
         keys = []
         for citation in sorted(citations):
             if re.match(r"^(?:fig|tbl|eq|sec|lst)-", citation):
@@ -371,6 +382,17 @@ class ObsidianPublisher:
             references = self.client.export_references(keys) if keys else []
         except ZoteroError as error:
             raise PublishError(str(error)) from None
+        paper_id = reviewed_paper_id(document["blocks"])
+        paper = next((reference for reference in references if reference["id"] == paper_id), {})
+        authors = csl_author_names(paper)
+        if authors:
+            author_line = {"t": "Str", "c": f"논문 저자: {', '.join(authors)}"}
+            document["blocks"].insert(0, {"t": "Para", "c": [author_line]})
+        markdown = self.pandoc.markdown(document)
+        if not preview and re.search(r"\[(?:논문 제목|핵심 질문|값|Dataset · split)\]", markdown):
+            raise PublishError("리뷰 본문에 템플릿의 빈 항목이 남아 있습니다.")
+        if re.search(r"(?:file://|obsidian://|/(?:Users|home|private)/|[A-Za-z]:\\)", markdown, re.I):
+            raise PublishError("공개 글에 개인 파일 경로가 남아 있습니다.")
         meta = {k: v for k, v in review.meta.items() if k in self.PUBLIC_FIELDS}
         for field in ("date", "date-modified"):
             if field in meta:

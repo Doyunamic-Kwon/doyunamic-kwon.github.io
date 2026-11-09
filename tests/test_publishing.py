@@ -128,6 +128,20 @@ class PublishingChecks(unittest.TestCase):
         refs = json.loads((self.repo / "posts/review/references.json").read_text())
         self.assertEqual([r["id"] for r in refs], ["zotero-ABCD1234"])
 
+    def test_author_line_uses_the_reviewed_paper_not_the_other_citations(self):
+        note = self.note(body="논문: [@zotero-WXYZ5678]\n\n관련 연구 [@zotero-ABCD1234].")
+        references = [
+            {"id": "zotero-ABCD1234", "author": [{"literal": "Other Authors"}]},
+            {"id": "zotero-WXYZ5678", "author": [{"given": "Jiazheng", "family": "Kang"},
+                                                  {"literal": "Research Group"}]},
+        ]
+        with patch.object(self.client, "export_references", return_value=references):
+            self.pub().sync()
+        copied = (self.repo / "posts/review/index.md").read_text()
+        self.assertIn("논문 저자: Jiazheng Kang, Research Group", copied)
+        self.assertNotIn("Other Authors", copied)
+        self.assertNotIn("논문 저자:", note.read_text())
+
     def test_withdrawal_preserves_unmanaged_content(self):
         path = self.note()
         self.pub().sync()

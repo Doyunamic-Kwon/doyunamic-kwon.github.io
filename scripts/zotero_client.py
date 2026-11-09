@@ -122,6 +122,12 @@ NAME_FIELDS = {"family", "given", "literal", "suffix", "dropping-particle", "non
 LOCAL_PATH = re.compile(r"(?:file:|(?:^|\s)(?:~[/\\]|/(?:Users|home|private|tmp|var)/|[A-Za-z]:[/\\]))", re.I)
 
 
+def csl_author_names(reference: dict) -> list[str]:
+    names = [name.get("literal") or " ".join(filter(None, (name.get("given"), name.get("family"))))
+             for name in reference.get("author", [])]
+    return list(filter(None, names))
+
+
 def _csl_text(value: object) -> str | None:
     cleaned = _plain(value)
     return cleaned if cleaned and not LOCAL_PATH.search(cleaned) else None
@@ -291,7 +297,7 @@ class ZoteroClient:
         zotero_link = f"zotero://select/library/items/{key}"
         metadata = {"title": title, "zotero_key": key, "citation_key": citation_key(key), "zotero_link": zotero_link}
         lines = ["---", *[f"{name}: {json.dumps(value, ensure_ascii=False)}" for name, value in metadata.items()], "---", "", f"# {_escape(title)}", "", "## 서지정보", ""]
-        authors = [name.get("literal") or " ".join(filter(None, [name.get("given"), name.get("family")])) for name in csl.get("author", [])]
+        authors = csl_author_names(csl)
         date = csl.get("issued", {})
         year = str(date["date-parts"][0][0]) if date.get("date-parts") else date.get("raw", "연도 미확인")
         summary = ". ".join(filter(None, [", ".join(authors), f"({year})", title, str(csl.get("container-title", ""))])) + "."
