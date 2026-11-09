@@ -1,8 +1,7 @@
 [
   {
     "id": "zotero-3X6QUYTN",
-    "type": "article-journal",
-    "language": "en",
+    "title": "Knowledge Sheaves: A Sheaf-Theoretic Framework for Knowledge Graph Embedding",
     "author": [
       {
         "given": "Thomas",
@@ -17,6 +16,7 @@
         "family": "Schrater"
       }
     ],
-    "title": "Knowledge Sheaves: A Sheaf-Theoretic Framework for Knowledge Graph Embedding"
+    "language": "en",
+    "type": "article-journal"
   }
 ]
