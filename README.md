@@ -20,15 +20,15 @@ Obsidian WIKI의 **Blog → 블로그 작성 안내**를 열면 각 작업을 �
 | 파일 | 수행하는 일 |
 |---|---|
 | `Zotero 가져오기.command` | 논문을 선택하고 서지정보·메모·PDF의 텍스트 주석을 Obsidian으로 가져오기 |
-| `새 글 만들기.command` | Zotero 논문과 연결된 리뷰 또는 빈 리뷰를 Obsidian에 만들기 |
+| `새 글 만들기.command` | 저장 폴더에 맞춰 Obsidian에 논문 리뷰 또는 공부 글 만들기 |
 | `미리보기.command` | 선택한 리뷰를 별도 임시 복사본에서 미리 보기 |
 | `게시하기.command` | 공개 리뷰 반영, 사이트 생성, GitHub 업로드 |
 | `연결 확인.command` | Zotero 연결과 Obsidian 작성 폴더 확인 |
 
 ## 글을 쓰고 게시하는 순서
 
-1. Zotero를 열고 `새 글 만들기.command`에서 논문을 고릅니다. Zotero에서 가져온 읽기 자료는 Literature에, 직접 쓸 리뷰는 Reviews에 만들어집니다.
-2. Obsidian Reviews에서 질문 하나와 잠정적인 답을 먼저 쓰고, 논문의 근거를 확인하며 설명을 고칩니다.
+1. `새 글 만들기.command`에서 저장 폴더를 먼저 고릅니다. `📚 공부`의 글에는 제목·태그·날짜·공개 설정·글 주소가 들어갑니다. 논문 리뷰를 만들 때는 Zotero를 열어 논문을 고릅니다.
+2. Obsidian Reviews에서 글을 씁니다. 새 논문 리뷰는 Introduction, Method, Experiments, Think deeper 순으로 시작합니다.
 3. `미리보기.command`에서 리뷰를 선택해 수식·그림·참고문헌을 확인합니다. 이 작업은 GitHub에 글을 올리지 않습니다.
 4. 공개할 리뷰의 `blog_publish`를 `true`로 바꾸고 `게시하기.command`를 실행합니다.
 

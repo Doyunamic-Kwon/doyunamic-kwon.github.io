@@ -73,6 +73,12 @@ class NewReviewChecks(unittest.TestCase):
             self.assertNotIn(field, meta)
         self.assertIn('[@zotero-ABCD1234]', text)
         self.assertIn('[[Blog/Literature/paper|Zotero 읽기 메모]]', text)
+        body = text.split('---', 2)[2].lstrip()
+        self.assertTrue(body.startswith('### Introduction\n---'))
+        self.assertEqual([line for line in body.splitlines() if line.startswith('#')], [
+            '### Introduction', '### Method', '##### Method 1', '#### Method 2',
+            '### Experiments', '### Think deeper',
+        ])
 
     def test_paper_date_and_venue_do_not_replace_blog_publication_date(self):
         meta, _, _ = self.create()
@@ -118,6 +124,17 @@ class NewReviewChecks(unittest.TestCase):
         self.assertNotIn('PAPER_DOI', text)
         client.get_item.assert_not_called()
         client.get_csl.assert_not_called()
+        self.lookup.assert_not_called()
+
+    def test_study_folder_only_adds_basic_properties_without_opening_zotero(self):
+        study = self.vault / 'Blog/Reviews' / blog.STUDY_FOLDER
+        study.mkdir(parents=True)
+        meta, text, client = self.create(selected=False, category=None, folder=None, answers=['2', 'Python 정리'])
+        self.assertEqual(self.created_path.parent, study)
+        self.assertEqual(meta, {'title': 'Python 정리', 'categories': ['공부'], 'date': '2026-11-06',
+                                'blog_publish': False, 'blog_slug': 'paper-review'})
+        self.assertEqual(text.split('---', 2)[2].strip(), '')
+        client.list_items.assert_not_called()
         self.lookup.assert_not_called()
 
     def test_new_review_can_create_a_nested_folder(self):

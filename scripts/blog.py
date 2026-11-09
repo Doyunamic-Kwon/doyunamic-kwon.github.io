@@ -25,6 +25,7 @@ from zotero_client import ZoteroClient, ZoteroError, citation_key
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / ".blog-local.json"
+STUDY_FOLDER = "📚 공부"
 
 
 def today() -> str:
@@ -95,7 +96,7 @@ title: 블로그 작성 안내
 
 ## 시작하기
 
-1. Zotero를 열고 [새 리뷰 만들기]({new})에서 논문과 저장 폴더를 고릅니다. 제목과 확인된 논문 정보가 자동으로 채워집니다.
+1. [새 글 만들기]({new})에서 저장 폴더를 먼저 고릅니다. `📚 공부`에는 기본 속성이 있는 빈 글을 만듭니다. 논문 리뷰를 만들 때는 Zotero를 열어 논문을 고릅니다.
 2. [리뷰 미리보기]({preview})에서 작성 중인 글을 확인합니다. Zotero 논문을 연결했다면 미리보기와 게시 중 Zotero를 열어 둡니다.
 3. 공개할 글의 `blog_publish`를 켜고 [블로그 게시하기]({publish})를 실행합니다.
 
@@ -219,7 +220,15 @@ def ensure_unique_review_slug(reviews: Path, slug: str) -> None:
 
 def new_post(args: argparse.Namespace) -> None:
     values = config()
-    key = choose_item(args.zotero, allow_none=True) if args.zotero or not args.title else None
+    vault = Path(values["vault"]).resolve()
+    reviews = safe_inside(vault / values["reviews"], vault)
+    review_folder = choose_review_folder(reviews, getattr(args, "folder", None))
+    relative_folder = review_folder.relative_to(reviews).parts
+    study = relative_folder[:1] == (STUDY_FOLDER,) and not args.zotero
+    kind = "공부 글" if study else "리뷰"
+    key = None
+    if not study and (args.zotero or not args.title):
+        key = choose_item(args.zotero, allow_none=True)
     note = import_zotero(key) if key else None
     paper = {}
     if key:
@@ -227,12 +236,12 @@ def new_post(args: argparse.Namespace) -> None:
         item, reference = client.get_item(key), client.get_csl(key)
         paper = paper_metadata(item, reference)
     default_title = f"[논문리뷰] {paper['title']}" if paper.get("title") else ""
-    title = args.title or default_title or input("리뷰 제목: ").strip()
+    title = args.title or default_title or input(f"{kind} 제목: ").strip()
     slug = args.slug or input("글 주소에 사용할 짧은 영문 이름 (예: rag-basics): ").strip()
-    vault = Path(values["vault"]).resolve()
-    reviews = safe_inside(vault / values["reviews"], vault)
-    review_folder = choose_review_folder(reviews, getattr(args, "folder", None))
-    category = args.category or (review_folder.name if review_folder != reviews else "")
+    default_category = review_folder.name if relative_folder else ""
+    if study and default_category == STUDY_FOLDER:
+        default_category = "공부"
+    category = args.category or default_category
     categories, seen_categories = [], set()
     for tag in [category, *paper.get("tags", [])]:
         tag = tag.strip()
@@ -240,25 +249,24 @@ def new_post(args: argparse.Namespace) -> None:
             categories.append(tag)
             seen_categories.add(tag.casefold())
     if not title:
-        raise PublishError("리뷰 제목을 입력하세요.")
+        raise PublishError(f"{kind} 제목을 입력하세요.")
     if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", slug) or len(slug) > 80:
         raise PublishError("글 주소에는 소문자·숫자·하이픈을 사용하세요.")
     destination = safe_inside(review_folder / f"{slug}.md", reviews)
     if destination.exists():
         raise PublishError("같은 주소의 Obsidian 리뷰가 이미 있습니다.")
     ensure_unique_review_slug(reviews, slug)
-    template = (ROOT / "templates/obsidian-review.md").read_text()
-    body = template.split("---", 2)[2].lstrip()
+    body = ""
+    if not study:
+        template = (ROOT / "templates/obsidian-review.md").read_text()
+        body = template.split("---", 2)[2].lstrip()
     if key:
         doi = paper["doi"]
         doi_label = re.sub(r"([\\`*_\[\]<>|])", r"\\\1", doi)
         doi_line = f"DOI: [{doi_label}](https://doi.org/{quote(doi, safe='/')})" if doi else ""
-        body = body.replace("<!-- PAPER_DOI -->", doi_line)
-        body = body.replace("<!-- ZOTERO_CITATION -->", f"논문: [@{citation_key(key)}]")
         relative = note.relative_to(vault).with_suffix("").as_posix()
-        body = body.replace("<!-- ZOTERO_NOTE -->", f"[[{relative}|Zotero 읽기 메모]]")
-    else:
-        body = body.replace("<!-- ZOTERO_CITATION -->", "").replace("<!-- ZOTERO_NOTE -->", "").replace("<!-- PAPER_DOI -->", "")
+        private_notes = [f"[[{relative}|Zotero 읽기 메모]]", doi_line, f"논문: [@{citation_key(key)}]"]
+        body = body.rstrip() + "\n\n%%\n" + "\n\n".join(filter(None, private_notes)) + "\n%%\n"
     fields = {"title": title, "categories": categories, "date": today(),
               "blog_publish": False, "blog_slug": slug}
     if key:
@@ -271,7 +279,7 @@ def new_post(args: argparse.Namespace) -> None:
         fields.update(lookup_paper_fields(item, reference, paper))
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(yaml_header(fields) + body)
-    print(f"\nObsidian 리뷰 초안을 만들었습니다.\n{destination}")
+    print(f"\nObsidian {kind} 초안을 만들었습니다.\n{destination}")
     print("\n미리보기로 확인한 뒤 blog_publish를 true로 바꾸면 게시할 수 있습니다.")
 
 
@@ -410,7 +418,7 @@ def main() -> None:
     connect.add_argument("--vault")
     z = commands.add_parser("zotero", help="Zotero 논문과 메모 가져오기")
     z.add_argument("key", nargs="?")
-    new = commands.add_parser("new", help="Obsidian에 리뷰 초안 만들기")
+    new = commands.add_parser("new", help="Obsidian에 리뷰 또는 공부 글 초안 만들기")
     new.add_argument("slug", nargs="?")
     new.add_argument("--title")
     new.add_argument("--category", help="추가할 태그 (메뉴는 폴더에서 생성)")
