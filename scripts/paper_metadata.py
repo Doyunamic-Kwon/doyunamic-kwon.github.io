@@ -49,6 +49,10 @@ def _date_text(value: object) -> str:
     if isinstance(value, int) and not isinstance(value, bool):
         return _parts_date([value])
     value = _clean(value)
+    date_range = value.split(" – ")
+    if len(date_range) == 2:
+        start, end = map(_date_text, date_range)
+        return f"{start} – {end}" if start and end else ""
     match = re.fullmatch(r"([0-9]{4})(?:[-/.]([0-9]{1,2})(?:[-/.]([0-9]{1,2}))?)?", value)
     if match:
         return _parts_date([int(part) for part in match.groups() if part is not None])

@@ -69,15 +69,16 @@ class NewReviewChecks(unittest.TestCase):
         self.assertNotIn('[논문명]', meta['title'])
         self.assertFalse(meta['blog_publish'])
         self.assertEqual(meta['zotero_key'], KEY)
+        for field in ('description', 'subtitle', 'date-modified'):
+            self.assertNotIn(field, meta)
         self.assertIn('[@zotero-ABCD1234]', text)
         self.assertIn('[[Blog/Literature/paper|Zotero 읽기 메모]]', text)
 
     def test_paper_date_and_venue_do_not_replace_blog_publication_date(self):
         meta, _, _ = self.create()
-        self.assertIn('논문 발표: 2024-06-01', meta['subtitle'])
-        self.assertIn('학회·게재처: ACL', meta['subtitle'])
+        self.assertEqual(meta['paper_date'], '2024-06-01')
+        self.assertEqual(meta['paper_venue'], 'ACL')
         self.assertEqual(meta['date'], '2026-11-06')
-        self.assertEqual(meta['date-modified'], '2026-11-06')
 
     def test_lookup_fields_are_saved_with_the_selected_zotero_item(self):
         self.lookup_fields = {'paper_venue': 'ACL 2024', 'paper_affiliations': ['Example University'],
@@ -93,24 +94,26 @@ class NewReviewChecks(unittest.TestCase):
         self.assertIn('https://doi.org/10.1234/test_%28v2%29', text)
         self.assertNotIn('<!-- PAPER_DOI -->', text)
 
-    def test_missing_paper_fields_are_explicitly_unknown(self):
+    def test_missing_paper_fields_are_omitted(self):
         self.item = {'data': {'itemType': 'preprint', 'title': PAPER_TITLE,
                               'dateAdded': '2026-11-06T00:00:00Z'}}
         self.csl = {'type': 'article', 'title': PAPER_TITLE}
         meta, text, _ = self.create()
-        self.assertEqual(meta['subtitle'], '논문 발표: 미확인 · 학회·게재처: 미확인')
-        self.assertIn('DOI: 미확인', text)
+        self.assertNotIn('paper_date', meta)
+        self.assertNotIn('paper_venue', meta)
+        self.assertNotIn('DOI:', text)
         self.assertNotIn('https://doi.org/', text)
 
     def test_custom_review_title_is_preserved(self):
         meta, _, _ = self.create(title='직접 정한 리뷰 제목')
         self.assertEqual(meta['title'], '직접 정한 리뷰 제목')
-        self.assertIn('2024-06-01', meta['subtitle'])
+        self.assertEqual(meta['paper_date'], '2024-06-01')
 
     def test_manual_review_has_no_invented_paper_metadata(self):
         meta, text, client = self.create(title='직접 작성한 글', selected=False)
         self.assertEqual(meta['title'], '직접 작성한 글')
-        self.assertNotIn('subtitle', meta)
+        self.assertNotIn('paper_date', meta)
+        self.assertNotIn('paper_venue', meta)
         self.assertNotIn('DOI:', text)
         self.assertNotIn('PAPER_DOI', text)
         client.get_item.assert_not_called()
@@ -143,6 +146,18 @@ class NewReviewChecks(unittest.TestCase):
         with self.assertRaisesRegex(blog.PublishError, '같은 글 주소'):
             self.create(folder='New Folder')
         self.assertFalse((self.vault / 'Blog/Reviews/New Folder').exists())
+
+    def test_setup_links_to_the_three_daily_actions_without_extra_folders(self):
+        local_config = Path(self.temporary.name) / '.blog-local.json'
+        with patch.object(blog, 'CONFIG', local_config), redirect_stdout(io.StringIO()):
+            blog.setup(argparse.Namespace(vault=str(self.vault)))
+        guide = (self.vault / 'Blog/블로그 작성 안내.md').read_text()
+        start = guide.split('## 시작하기\n', 1)[1].split('\n## 작성 폴더', 1)[0]
+        self.assertEqual(start.count('file://'), 3)
+        for name in ('새 글 만들기.command', '미리보기.command', '게시하기.command'):
+            self.assertIn((ROOT / name).as_uri(), start)
+        self.assertFalse((self.vault / 'Blog/Assets').exists())
+        self.assertFalse((self.vault / 'Blog/Templates').exists())
 
 
 if __name__ == '__main__':

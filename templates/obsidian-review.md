@@ -1,10 +1,6 @@
 ---
-title: "[논문리뷰]:[논문 제목]"
-subtitle: ""
-description: ""
-categories: [LLM]
-date: "2026-11-05"
-date-modified: "2026-11-05"
+title: "[논문리뷰] [논문 제목]"
+categories: []
 blog_publish: false
 blog_slug: "paper-review"
 ---

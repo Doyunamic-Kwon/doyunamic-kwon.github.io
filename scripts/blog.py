@@ -69,31 +69,23 @@ def setup(args: argparse.Namespace) -> None:
     if args.vault:
         values = json.loads(CONFIG.read_text()) if CONFIG.is_file() else {}
         values.update({"vault": str(Path(args.vault).expanduser().resolve()),
-                       "reviews": "Blog/Reviews", "literature": "Blog/Literature", "templates": "Blog/Templates"})
+                       "reviews": "Blog/Reviews", "literature": "Blog/Literature"})
+        values.pop("templates", None)
         write_json(CONFIG, values)
     values = config()
     vault = Path(values["vault"]).expanduser().resolve()
     if not vault.is_dir():
         raise PublishError("Obsidian Vault 폴더를 먼저 확인하세요.")
     home = safe_inside(vault / "Blog", vault)
-    for relative in ("Blog", values["reviews"], values["literature"], values["templates"], "Blog/Assets"):
+    for relative in ("Blog", values["reviews"], values["literature"]):
         safe_inside(vault / relative, vault).mkdir(parents=True, exist_ok=True)
     identity = home / ".blog-vault-id"
     if not identity.exists():
         identity.write_text(uuid.uuid4().hex + "\n")
-    template = (ROOT / "templates/obsidian-review.md").read_text()
-    template_path = safe_inside(vault / values["templates"] / "논문 리뷰.md", vault)
-    if not template_path.exists():
-        template_path.write_text(template)
-    actions = {
-        "Zotero·Obsidian 연결 확인": "연결 확인.command",
-        "Zotero 논문 가져오기": "Zotero 가져오기.command",
-        "새 리뷰 만들기": "새 글 만들기.command",
-        "선택한 리뷰 미리보기": "미리보기.command",
-        "공개 선택한 리뷰 가져오기": "Obsidian 가져오기.command",
-        "블로그 게시하기": "게시하기.command",
-    }
-    links = "\n".join(f"- [{label}]({(ROOT / name).as_uri()})" for label, name in actions.items())
+    new, preview, publish, refresh = (
+        (ROOT / name).as_uri() for name in
+        ("새 글 만들기.command", "미리보기.command", "게시하기.command", "Zotero 가져오기.command")
+    )
     marker = "<!-- doyunamic-blog-guide -->"
     guide = f"""---
 title: 블로그 작성 안내
@@ -101,53 +93,25 @@ title: 블로그 작성 안내
 
 {marker}
 
-# Doyunamic 블로그 작성
-
-이 폴더에서 논문을 읽고 리뷰를 작성합니다. 글을 공개하려면 리뷰의 `blog_publish`를 켠 뒤 게시하기를 실행하세요.
-
 ## 시작하기
 
-{links}
+1. Zotero를 열고 [새 리뷰 만들기]({new})에서 논문과 저장 폴더를 고릅니다. 제목과 확인된 논문 정보가 자동으로 채워집니다.
+2. [리뷰 미리보기]({preview})에서 작성 중인 글을 확인합니다. Zotero 논문을 연결했다면 미리보기와 게시 중 Zotero를 열어 둡니다.
+3. 공개할 글의 `blog_publish`를 켜고 [블로그 게시하기]({publish})를 실행합니다.
 
-파일 링크를 열면 BLOG 폴더의 작업 창이 실행됩니다. macOS에서 확인 창이 뜨면 표시된 파일 이름과 경로를 확인하세요.
+## 작성 폴더
 
-## 폴더
+**Reviews**에 리뷰를 씁니다. 공개 글의 폴더 구조가 블로그 왼쪽 메뉴가 되고, `blog_slug`가 글 주소를 정합니다. 학회·논문 날짜·소속·링크는 리뷰 속성에서 수정합니다.
 
-- **Literature**: Zotero에서 가져온 논문 정보·메모·PDF 주석입니다. 새로 가져오면 가져온 구간이 갱신됩니다. 각 파일의 ‘내 메모’ 아래는 유지합니다.
-- **Reviews**: 직접 쓰는 논문 리뷰입니다. Zotero 읽기 자료와 별개 파일이므로 직접 쓴 내용을 다시 가져오기로 덮어쓰지 않습니다.
-- **Assets**: 리뷰에서 사용할 그림을 보관할 수 있습니다.
-- **Templates**: 논문 리뷰의 기본 틀입니다.
+**Literature**는 Zotero에서 가져온 서지정보·메모·PDF 주석을 모아두는 읽기 폴더입니다. Zotero에 메모를 더했으면 [읽기 메모 갱신]({refresh})을 사용할 수 있습니다. Obsidian에 직접 적은 ‘내 메모’는 보존됩니다.
 
-## 폴더와 메뉴
+그림은 리뷰와 같은 폴더나 원하는 첨부 폴더에 저장하고 `![[그림.png]]`로 연결합니다.
 
-`Blog/Reviews`의 폴더와 파일 구조가 블로그 왼쪽 메뉴가 됩니다. Obsidian에서 폴더를 만들거나 글을 옮긴 뒤 ‘블로그 게시하기’를 실행하면 반영됩니다. 별도 분류 문서는 사용하지 않습니다.
-
-공개를 선택한 글과 그 글이 들어 있는 폴더만 메뉴에 나타납니다. 폴더 이름을 바꾸거나 글을 옮겨도 `blog_slug`를 유지하면 글 주소는 바뀌지 않습니다. 새 리뷰를 만들 때에는 저장할 폴더를 선택하거나 새 폴더를 만들 수 있습니다.
-
-## 글을 쓰는 순서
-
-1. Zotero를 열고 ‘Zotero 논문 가져오기’에서 논문을 선택합니다.
-2. ‘새 리뷰 만들기’에서 해당 논문 또는 직접 작성할 제목을 선택합니다.
-   논문을 고르면 제목은 `[논문리뷰] 실제 논문명`으로 만들어집니다. 학회·소속과 논문·프로젝트·GitHub 링크는 공개 자료에서 확인되는 항목을 채웁니다. 리뷰 속성에서 보완할 수 있습니다.
-3. Reviews의 Markdown 파일에서 질문 하나와 잠정적인 답을 먼저 적고, 근거를 확인하며 설명을 고칩니다.
-4. ‘선택한 리뷰 미리보기’로 수식·그림·참고문헌을 확인합니다. `blog_publish: false`인 초안도 개인 미리보기로 볼 수 있습니다.
-5. 공개할 때 `blog_publish: true`로 바꾸고 ‘블로그 게시하기’를 실행합니다.
+인용에는 읽기 메모에 있는 `[@zotero-항목키]`를 사용합니다.
 
 ## 공개 범위
 
-블로그로 가져오는 파일은 Reviews 안에서 `blog_publish: true`로 선택한 리뷰와 해당 리뷰에 연결한 그림입니다. Literature, 이 안내문, Templates와 Obsidian 설정은 블로그 저장소로 복사하지 않습니다.
-
-`%% ... %%` 안의 개인 메모와 HTML 주석은 공개 복사본에서 제외됩니다. 개인 메모 링크는 주석 안에 두세요. 다른 리뷰로 연결할 때에는 연결 대상도 공개 대상으로 선택해야 합니다.
-
-공개를 철회하려면 해당 리뷰의 `blog_publish`를 false로 바꾸고 게시하기를 실행하세요. 현재 사이트에서는 빠지지만, 이미 공개 저장소에 올린 이전 버전은 Git history에 남을 수 있습니다.
-
-## 인용과 그림
-
-Zotero에서 가져온 노트에는 `[@zotero-항목키]` 형식의 인용이 있습니다. 리뷰 본문에 복사하면 게시 전에 해당 논문의 서지정보만 Zotero에서 가져옵니다. 논문 인용이 있는 글을 가져오거나 미리 볼 때에는 Zotero를 열어 두세요.
-
-그림은 `![[그림.png]]` 또는 `![그림 설명](../Assets/그림.png)`로 연결합니다. 사용한 그림만 공개 복사본에 들어갑니다. PDF 전체나 다른 노트를 본문에 포함하는 기능은 이 게시 흐름에서 사용하지 않습니다.
-
-블로그용으로 생성한 posts 폴더의 복사본은 직접 수정하지 말고 Reviews의 원본을 수정하세요.
+`blog_publish`를 켠 리뷰와 그 글이 쓰는 그림만 게시합니다. Literature와 `%% ... %%` 안의 개인 메모는 작성용으로 보관됩니다.
 """
     guide_path = home / "블로그 작성 안내.md"
     if not guide_path.exists() or marker in guide_path.read_text():
@@ -288,20 +252,21 @@ def new_post(args: argparse.Namespace) -> None:
     if key:
         doi = paper["doi"]
         doi_label = re.sub(r"([\\`*_\[\]<>|])", r"\\\1", doi)
-        doi_line = f"DOI: [{doi_label}](https://doi.org/{quote(doi, safe='/')})" if doi else "DOI: 미확인"
+        doi_line = f"DOI: [{doi_label}](https://doi.org/{quote(doi, safe='/')})" if doi else ""
         body = body.replace("<!-- PAPER_DOI -->", doi_line)
         body = body.replace("<!-- ZOTERO_CITATION -->", f"논문: [@{citation_key(key)}]")
         relative = note.relative_to(vault).with_suffix("").as_posix()
         body = body.replace("<!-- ZOTERO_NOTE -->", f"[[{relative}|Zotero 읽기 메모]]")
     else:
         body = body.replace("<!-- ZOTERO_CITATION -->", "").replace("<!-- ZOTERO_NOTE -->", "").replace("<!-- PAPER_DOI -->", "")
-    fields = {"title": title, "description": "", "categories": categories, "date": today(),
-              "date-modified": today(), "blog_publish": False, "blog_slug": slug}
+    fields = {"title": title, "categories": categories, "date": today(),
+              "blog_publish": False, "blog_slug": slug}
     if key:
         fields["zotero_key"] = key
-        published = paper["published"] or "미확인"
-        venue = paper["venue"] or "미확인"
-        fields["subtitle"] = f"논문 발표: {published} · 학회·게재처: {venue}"
+        if paper["published"]:
+            fields["paper_date"] = paper["published"]
+        if paper["venue"]:
+            fields["paper_venue"] = paper["venue"]
         print("학회·소속과 논문 링크를 확인합니다.")
         fields.update(lookup_paper_fields(item, reference, paper))
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -375,8 +340,8 @@ def build(*, sync: bool = True, tracked_posts_only: bool = False) -> None:
 
 
 PUBLIC_ROOT = {".gitignore", ".nojekyll", "README.md", "_quarto.yml", "index.qmd", "reviews.qmd",
-               "about.qmd", "review-guide.qmd", "references.bib", "새 글 만들기.command", "미리보기.command",
-               "게시하기.command", "Zotero 가져오기.command", "Obsidian 가져오기.command", "연결 확인.command"}
+               "about.qmd", "새 글 만들기.command", "미리보기.command", "게시하기.command",
+               "Zotero 가져오기.command", "연결 확인.command"}
 PUBLIC_DIRS = {"assets", "styles", "includes", "templates", "scripts", "tests", "docs"}
 SOURCE_ADDITIONS = {"scripts/publishing.py", "scripts/zotero_client.py", "tests/test_publishing.py",
                     "tests/test_zotero_client.py", "templates/obsidian-review.md", "scripts/paper_metadata.py",

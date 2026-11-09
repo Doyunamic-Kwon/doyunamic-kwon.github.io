@@ -22,7 +22,6 @@ Obsidian WIKI의 **Blog → 블로그 작성 안내**를 열면 각 작업을 �
 | `Zotero 가져오기.command` | 논문을 선택하고 서지정보·메모·PDF의 텍스트 주석을 Obsidian으로 가져오기 |
 | `새 글 만들기.command` | Zotero 논문과 연결된 리뷰 또는 빈 리뷰를 Obsidian에 만들기 |
 | `미리보기.command` | 선택한 리뷰를 별도 임시 복사본에서 미리 보기 |
-| `Obsidian 가져오기.command` | 공개를 선택한 리뷰와 필요한 그림을 블로그로 가져오기 |
 | `게시하기.command` | 공개 리뷰 반영, 사이트 생성, GitHub 업로드 |
 | `연결 확인.command` | Zotero 연결과 Obsidian 작성 폴더 확인 |
 
@@ -39,13 +38,13 @@ Obsidian WIKI의 **Blog → 블로그 작성 안내**를 열면 각 작업을 �
 
 학회·날짜·소속은 리뷰 속성의 `paper_venue`, `paper_date`, `paper_affiliations`에서 수정할 수 있습니다. `Paper`, `Page`, `GitHub` 링크는 `paper_url`, `paper_page`, `paper_github`에서 수정하세요.
 
-태그는 저장한 폴더 이름과 해당 Zotero 항목의 태그를 합쳐 중복을 제거합니다. Reviews에 바로 저장하면 Zotero 태그를 사용합니다. 작성 중에는 Obsidian의 `title`, `subtitle`, `categories`를 수정할 수 있습니다.
+태그는 저장한 폴더 이름과 해당 Zotero 항목의 태그를 합쳐 중복을 제거합니다. Reviews에 바로 저장하면 Zotero 태그를 사용합니다. 작성 중에는 Obsidian의 `title`과 `categories`를 수정할 수 있습니다.
 
 `blog_slug`는 글 주소의 마지막 부분입니다. 예를 들어 `rag-basics`이면 `/posts/rag-basics/`로 게시됩니다. 이미 게시한 글의 주소를 바꾸면 예전 링크가 끊길 수 있습니다.
 
 ## 개인 메모와 공개 리뷰
 
-Obsidian Vault는 이 공개 저장소 밖에 있습니다. Vault의 Literature, Templates, 안내문, 설정과 일반 메모는 이 저장소에 복사하지 않습니다.
+Obsidian Vault는 이 공개 저장소 밖에 있습니다. Vault의 Literature, 안내문, 설정과 일반 메모는 이 저장소에 복사하지 않습니다.
 
 Reviews에서 `blog_publish: true`로 선택한 글과 그 글이 사용하는 그림만 가져옵니다. 원본 파일 대신 공개에 필요한 metadata와 본문으로 새 Markdown 파일을 만듭니다.
 
@@ -67,7 +66,7 @@ Zotero의 Settings → Advanced → **Allow other applications on this computer 
 
 ## 그림과 글 링크
 
-그림은 `![[그림.png]]` 또는 `![그림 설명](../Assets/그림.png)`로 연결합니다. 해당 그림만 복사하고, 공개 파일 이름은 그림 내용의 hash로 정합니다.
+그림은 리뷰와 같은 폴더나 Vault 안의 첨부 폴더에 저장하고 `![[그림.png]]` 또는 리뷰 기준 상대 경로로 연결합니다. 사용한 그림만 복사하고, 공개 파일 이름은 그림 내용의 hash로 정합니다.
 
 PNG, JPEG, WebP, GIF, AVIF와 실행 요소가 없는 SVG를 지원합니다. PDF 전체나 다른 노트를 본문에 포함하는 링크는 가져오지 않습니다.
 
@@ -109,7 +108,6 @@ GitHub Pages는 **Deploy from a branch → main → /docs** 설정입니다. 게
 |---|---|
 | `index.qmd`, `reviews.qmd`, `about.qmd` | 홈·리뷰 목록·소개 |
 | `templates/obsidian-review.md` | Obsidian용 리뷰 템플릿 |
-| `templates/paper-review/index.qmd` | 기존 Quarto용 상세 리뷰 템플릿 |
 | `scripts/zotero_client.py` | Zotero의 선택 항목을 읽는 연결 기능 |
 | `scripts/paper_metadata.py`, `scripts/paper_lookup.py` | Zotero와 공개 논문에서 제목 영역의 정보 정리 |
 | `scripts/obsidian_tree.py` | Obsidian의 폴더·파일 구조로 왼쪽 메뉴 생성 |
